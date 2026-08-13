@@ -40,6 +40,7 @@ export interface Commodity {
   }
   category: string
   iconName?: string
+  imageName?: string
   public: true
 }
 
@@ -51,6 +52,7 @@ export interface AdminCommodity {
   category: CommodityCategory
   name: { en: string; fr: string }
   iconName?: string
+  imageName?: string
   defaultUnitCode?: string
   allowedUnitCodes: string[]
   isPublic: boolean
@@ -139,7 +141,7 @@ interface Envelope<T> {
   data: T
 }
 
-import { getAccessToken, refresh as refreshToken } from './auth'
+import { expireSession, getAccessToken, refresh as refreshToken } from './auth'
 
 export class ApiError extends Error {
   readonly status: number
@@ -165,11 +167,13 @@ export async function api<T>(path: string, identity?: Identity, init?: RequestIn
   if (response.status === 401) {
     const refreshed = await refreshToken()
     if (refreshed) response = await attempt()
+    if (!refreshed || response.status === 401) expireSession()
   }
   const body = (await response.json().catch(() => null)) as Envelope<T> | { message?: string | string[] } | null
   if (!response.ok) {
     const message = body && 'message' in body ? body.message : undefined
     throw new ApiError(Array.isArray(message) ? message.join(', ') : message ?? `Erreur HTTP ${response.status}`, response.status)
   }
+  if (response.status === 204) return undefined as T
   return (body as Envelope<T>).data
 }

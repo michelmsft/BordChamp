@@ -1,6 +1,6 @@
 import { authorize } from "@bordchamp/authz";
 import type { ActorContext } from "@bordchamp/domain";
-import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 
 import {
   COMMODITY_REPOSITORY,
@@ -72,6 +72,24 @@ export class ReferenceDataService {
     return this.units.upsert(input);
   }
 
+  async deleteUnit(actor: ActorContext, code: string): Promise<void> {
+    this.requireAdmin(actor);
+    const normalized = code.trim().toUpperCase();
+    const [units, commodities, schemes] = await Promise.all([
+      this.units.listAll(),
+      this.commodities.listAll(),
+      this.schemes.listAll(),
+    ]);
+    if (!units.some((unit) => unit.code === normalized)) throw new NotFoundException("Unit not found");
+    const dependentUnit = units.find((unit) => unit.code !== normalized && unit.baseUnitCode === normalized);
+    if (dependentUnit) throw new ConflictException(`Unit is used as the base unit by ${dependentUnit.code}`);
+    const commodity = commodities.find((item) => item.defaultUnitCode === normalized || item.allowedUnitCodes.includes(normalized));
+    if (commodity) throw new ConflictException(`Unit is used by product ${commodity.code}`);
+    const scheme = schemes.find((item) => item.metrics.some((metric) => metric.standard.unitCode === normalized));
+    if (scheme) throw new ConflictException(`Unit is used by control ${scheme.commodityCode}:${scheme.type}`);
+    await this.units.delete(normalized);
+  }
+
   async listAdminSchemes(actor: ActorContext): Promise<readonly InspectionScheme[]> {
     this.requireAdmin(actor);
     return this.schemes.listAll();
@@ -79,6 +97,13 @@ export class ReferenceDataService {
 
   async upsertScheme(actor: ActorContext, input: UpsertInspectionSchemeInput): Promise<InspectionScheme> {
     this.requireAdmin(actor);
+    return this.schemes.upsert(input);
+  }
+
+  async createScheme(actor: ActorContext, input: UpsertInspectionSchemeInput): Promise<InspectionScheme> {
+    this.requireAdmin(actor);
+    const existing = await this.schemes.get(input.commodityCode, input.type);
+    if (existing) throw new ConflictException(`Control ${input.commodityCode}:${input.type} already exists`);
     return this.schemes.upsert(input);
   }
 

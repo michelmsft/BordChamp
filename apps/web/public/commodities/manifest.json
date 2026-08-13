@@ -1,0 +1,1718 @@
+[
+  {
+    "name": "crop-01",
+    "category": "crop",
+    "label": "Fonio",
+    "path": "/commodities/crop-01.png"
+  },
+  {
+    "name": "crop-02",
+    "category": "crop",
+    "label": "Riz paddy",
+    "path": "/commodities/crop-02.png"
+  },
+  {
+    "name": "crop-03",
+    "category": "crop",
+    "label": "Riz blanc",
+    "path": "/commodities/crop-03.png"
+  },
+  {
+    "name": "crop-04",
+    "category": "crop",
+    "label": "Riz étuvé",
+    "path": "/commodities/crop-04.png"
+  },
+  {
+    "name": "crop-05",
+    "category": "crop",
+    "label": "Maïs",
+    "path": "/commodities/crop-05.png"
+  },
+  {
+    "name": "crop-06",
+    "category": "crop",
+    "label": "Sorgho",
+    "path": "/commodities/crop-06.png"
+  },
+  {
+    "name": "crop-07",
+    "category": "crop",
+    "label": "Mil",
+    "path": "/commodities/crop-07.png"
+  },
+  {
+    "name": "crop-08",
+    "category": "crop",
+    "label": "Blé",
+    "path": "/commodities/crop-08.png"
+  },
+  {
+    "name": "crop-09",
+    "category": "crop",
+    "label": "Avoine",
+    "path": "/commodities/crop-09.png"
+  },
+  {
+    "name": "crop-10",
+    "category": "crop",
+    "label": "Orge",
+    "path": "/commodities/crop-10.png"
+  },
+  {
+    "name": "crop-11",
+    "category": "crop",
+    "label": "Niébé",
+    "path": "/commodities/crop-11.png"
+  },
+  {
+    "name": "crop-12",
+    "category": "crop",
+    "label": "Haricot rouge",
+    "path": "/commodities/crop-12.png"
+  },
+  {
+    "name": "crop-13",
+    "category": "crop",
+    "label": "Haricot blanc",
+    "path": "/commodities/crop-13.png"
+  },
+  {
+    "name": "crop-14",
+    "category": "crop",
+    "label": "Haricot vert",
+    "path": "/commodities/crop-14.png"
+  },
+  {
+    "name": "crop-15",
+    "category": "crop",
+    "label": "Pois de terre (voandzou)",
+    "path": "/commodities/crop-15.png"
+  },
+  {
+    "name": "crop-16",
+    "category": "crop",
+    "label": "Arachide",
+    "path": "/commodities/crop-16.png"
+  },
+  {
+    "name": "crop-17",
+    "category": "crop",
+    "label": "Soja",
+    "path": "/commodities/crop-17.png"
+  },
+  {
+    "name": "crop-18",
+    "category": "crop",
+    "label": "Pois",
+    "path": "/commodities/crop-18.png"
+  },
+  {
+    "name": "crop-19",
+    "category": "crop",
+    "label": "Lentille",
+    "path": "/commodities/crop-19.png"
+  },
+  {
+    "name": "crop-20",
+    "category": "crop",
+    "label": "Fève",
+    "path": "/commodities/crop-20.png"
+  },
+  {
+    "name": "crop-21",
+    "category": "crop",
+    "label": "Manioc",
+    "path": "/commodities/crop-21.png"
+  },
+  {
+    "name": "crop-22",
+    "category": "crop",
+    "label": "Igname",
+    "path": "/commodities/crop-22.png"
+  },
+  {
+    "name": "crop-23",
+    "category": "crop",
+    "label": "Patate douce",
+    "path": "/commodities/crop-23.png"
+  },
+  {
+    "name": "crop-24",
+    "category": "crop",
+    "label": "Pomme de terre",
+    "path": "/commodities/crop-24.png"
+  },
+  {
+    "name": "crop-25",
+    "category": "crop",
+    "label": "Taro",
+    "path": "/commodities/crop-25.png"
+  },
+  {
+    "name": "crop-26",
+    "category": "crop",
+    "label": "Macabo",
+    "path": "/commodities/crop-26.png"
+  },
+  {
+    "name": "crop-27",
+    "category": "crop",
+    "label": "Gombo",
+    "path": "/commodities/crop-27.png"
+  },
+  {
+    "name": "crop-28",
+    "category": "crop",
+    "label": "Épinard",
+    "path": "/commodities/crop-28.png"
+  },
+  {
+    "name": "crop-29",
+    "category": "crop",
+    "label": "Oseille",
+    "path": "/commodities/crop-29.png"
+  },
+  {
+    "name": "crop-30",
+    "category": "crop",
+    "label": "Feuille de manioc",
+    "path": "/commodities/crop-30.png"
+  },
+  {
+    "name": "crop-31",
+    "category": "crop",
+    "label": "Feuille de patate douce",
+    "path": "/commodities/crop-31.png"
+  },
+  {
+    "name": "crop-32",
+    "category": "crop",
+    "label": "Feuille de taro",
+    "path": "/commodities/crop-32.png"
+  },
+  {
+    "name": "crop-33",
+    "category": "crop",
+    "label": "Feuille de corète",
+    "path": "/commodities/crop-33.png"
+  },
+  {
+    "name": "crop-34",
+    "category": "crop",
+    "label": "Laitue",
+    "path": "/commodities/crop-34.png"
+  },
+  {
+    "name": "crop-35",
+    "category": "crop",
+    "label": "Chou",
+    "path": "/commodities/crop-35.png"
+  },
+  {
+    "name": "crop-36",
+    "category": "crop",
+    "label": "Chou-fleur",
+    "path": "/commodities/crop-36.png"
+  },
+  {
+    "name": "crop-37",
+    "category": "crop",
+    "label": "Carotte",
+    "path": "/commodities/crop-37.png"
+  },
+  {
+    "name": "crop-38",
+    "category": "crop",
+    "label": "Courgette",
+    "path": "/commodities/crop-38.png"
+  },
+  {
+    "name": "crop-39",
+    "category": "crop",
+    "label": "Navet",
+    "path": "/commodities/crop-39.png"
+  },
+  {
+    "name": "crop-40",
+    "category": "crop",
+    "label": "Betterave",
+    "path": "/commodities/crop-40.png"
+  },
+  {
+    "name": "crop-41",
+    "category": "crop",
+    "label": "Tomate",
+    "path": "/commodities/crop-41.png"
+  },
+  {
+    "name": "crop-42",
+    "category": "crop",
+    "label": "Oignon",
+    "path": "/commodities/crop-42.png"
+  },
+  {
+    "name": "crop-43",
+    "category": "crop",
+    "label": "Ail",
+    "path": "/commodities/crop-43.png"
+  },
+  {
+    "name": "crop-44",
+    "category": "crop",
+    "label": "Échalote",
+    "path": "/commodities/crop-44.png"
+  },
+  {
+    "name": "crop-45",
+    "category": "crop",
+    "label": "Piment",
+    "path": "/commodities/crop-45.png"
+  },
+  {
+    "name": "crop-46",
+    "category": "crop",
+    "label": "Poivron",
+    "path": "/commodities/crop-46.png"
+  },
+  {
+    "name": "crop-47",
+    "category": "crop",
+    "label": "Aubergine",
+    "path": "/commodities/crop-47.png"
+  },
+  {
+    "name": "crop-48",
+    "category": "crop",
+    "label": "Concombre",
+    "path": "/commodities/crop-48.png"
+  },
+  {
+    "name": "crop-49",
+    "category": "crop",
+    "label": "Persil",
+    "path": "/commodities/crop-49.png"
+  },
+  {
+    "name": "crop-50",
+    "category": "crop",
+    "label": "Céleri",
+    "path": "/commodities/crop-50.png"
+  },
+  {
+    "name": "crop-51",
+    "category": "crop",
+    "label": "Poireau",
+    "path": "/commodities/crop-51.png"
+  },
+  {
+    "name": "crop-52",
+    "category": "crop",
+    "label": "Citronnelle",
+    "path": "/commodities/crop-52.png"
+  },
+  {
+    "name": "crop-53",
+    "category": "crop",
+    "label": "Basilic",
+    "path": "/commodities/crop-53.png"
+  },
+  {
+    "name": "crop-54",
+    "category": "crop",
+    "label": "Menthe",
+    "path": "/commodities/crop-54.png"
+  },
+  {
+    "name": "crop-55",
+    "category": "crop",
+    "label": "Gingembre",
+    "path": "/commodities/crop-55.png"
+  },
+  {
+    "name": "crop-56",
+    "category": "crop",
+    "label": "Curcuma",
+    "path": "/commodities/crop-56.png"
+  },
+  {
+    "name": "crop-57",
+    "category": "crop",
+    "label": "Roucou (épice)",
+    "path": "/commodities/crop-57.png"
+  },
+  {
+    "name": "crop-58",
+    "category": "crop",
+    "label": "Poivre noir",
+    "path": "/commodities/crop-58.png"
+  },
+  {
+    "name": "crop-59",
+    "category": "crop",
+    "label": "Poivre blanc",
+    "path": "/commodities/crop-59.png"
+  },
+  {
+    "name": "crop-60",
+    "category": "crop",
+    "label": "Vanille",
+    "path": "/commodities/crop-60.png"
+  },
+  {
+    "name": "crop-61",
+    "category": "crop",
+    "label": "Banane plantain",
+    "path": "/commodities/crop-61.png"
+  },
+  {
+    "name": "crop-62",
+    "category": "crop",
+    "label": "Banane douce",
+    "path": "/commodities/crop-62.png"
+  },
+  {
+    "name": "crop-63",
+    "category": "crop",
+    "label": "Ananas",
+    "path": "/commodities/crop-63.png"
+  },
+  {
+    "name": "crop-64",
+    "category": "crop",
+    "label": "Mangue",
+    "path": "/commodities/crop-64.png"
+  },
+  {
+    "name": "crop-65",
+    "category": "crop",
+    "label": "Papaye",
+    "path": "/commodities/crop-65.png"
+  },
+  {
+    "name": "crop-66",
+    "category": "crop",
+    "label": "Orange",
+    "path": "/commodities/crop-66.png"
+  },
+  {
+    "name": "crop-67",
+    "category": "crop",
+    "label": "Citron",
+    "path": "/commodities/crop-67.png"
+  },
+  {
+    "name": "crop-68",
+    "category": "crop",
+    "label": "Citron vert",
+    "path": "/commodities/crop-68.png"
+  },
+  {
+    "name": "crop-69",
+    "category": "crop",
+    "label": "Mandarine",
+    "path": "/commodities/crop-69.png"
+  },
+  {
+    "name": "crop-70",
+    "category": "crop",
+    "label": "Pamplemousse",
+    "path": "/commodities/crop-70.png"
+  },
+  {
+    "name": "crop-71",
+    "category": "crop",
+    "label": "Avocat",
+    "path": "/commodities/crop-71.png"
+  },
+  {
+    "name": "crop-72",
+    "category": "crop",
+    "label": "Goyave",
+    "path": "/commodities/crop-72.png"
+  },
+  {
+    "name": "crop-73",
+    "category": "crop",
+    "label": "Grenadille",
+    "path": "/commodities/crop-73.png"
+  },
+  {
+    "name": "crop-74",
+    "category": "crop",
+    "label": "Pastèque",
+    "path": "/commodities/crop-74.png"
+  },
+  {
+    "name": "crop-75",
+    "category": "crop",
+    "label": "Melon",
+    "path": "/commodities/crop-75.png"
+  },
+  {
+    "name": "crop-76",
+    "category": "crop",
+    "label": "Corossol",
+    "path": "/commodities/crop-76.png"
+  },
+  {
+    "name": "crop-77",
+    "category": "crop",
+    "label": "Grenade",
+    "path": "/commodities/crop-77.png"
+  },
+  {
+    "name": "crop-78",
+    "category": "crop",
+    "label": "Fruit tropical brun",
+    "path": "/commodities/crop-78.png"
+  },
+  {
+    "name": "crop-79",
+    "category": "crop",
+    "label": "Noix tropicales",
+    "path": "/commodities/crop-79.png"
+  },
+  {
+    "name": "crop-80",
+    "category": "crop",
+    "label": "Ditakh",
+    "path": "/commodities/crop-80.png"
+  },
+  {
+    "name": "crop-81",
+    "category": "crop",
+    "label": "Coton",
+    "path": "/commodities/crop-81.png"
+  },
+  {
+    "name": "crop-82",
+    "category": "crop",
+    "label": "Noix de cajou (anacarde)",
+    "path": "/commodities/crop-82.png"
+  },
+  {
+    "name": "crop-83",
+    "category": "crop",
+    "label": "Noix de kola",
+    "path": "/commodities/crop-83.png"
+  },
+  {
+    "name": "crop-84",
+    "category": "crop",
+    "label": "Karité",
+    "path": "/commodities/crop-84.png"
+  },
+  {
+    "name": "crop-85",
+    "category": "crop",
+    "label": "Graines de courge (pistache africaine)",
+    "path": "/commodities/crop-85.png"
+  },
+  {
+    "name": "crop-86",
+    "category": "crop",
+    "label": "Palmiste",
+    "path": "/commodities/crop-86.png"
+  },
+  {
+    "name": "crop-87",
+    "category": "crop",
+    "label": "Coprah",
+    "path": "/commodities/crop-87.png"
+  },
+  {
+    "name": "crop-88",
+    "category": "crop",
+    "label": "Fibre de coton",
+    "path": "/commodities/crop-88.png"
+  },
+  {
+    "name": "crop-89",
+    "category": "crop",
+    "label": "Noix de palme",
+    "path": "/commodities/crop-89.png"
+  },
+  {
+    "name": "crop-90",
+    "category": "crop",
+    "label": "Cacao",
+    "path": "/commodities/crop-90.png"
+  },
+  {
+    "name": "crop-91",
+    "category": "crop",
+    "label": "Bissap",
+    "path": "/commodities/crop-91.png"
+  },
+  {
+    "name": "crop-92",
+    "category": "crop",
+    "label": "Néré",
+    "path": "/commodities/crop-92.png"
+  },
+  {
+    "name": "crop-93",
+    "category": "crop",
+    "label": "Baobab (pain de singe)",
+    "path": "/commodities/crop-93.png"
+  },
+  {
+    "name": "crop-94",
+    "category": "crop",
+    "label": "Champignon frais",
+    "path": "/commodities/crop-94.png"
+  },
+  {
+    "name": "crop-95",
+    "category": "crop",
+    "label": "Plantes maraîchères",
+    "path": "/commodities/crop-95.png"
+  },
+  {
+    "name": "crop-96",
+    "category": "crop",
+    "label": "Plants fruitiers",
+    "path": "/commodities/crop-96.png"
+  },
+  {
+    "name": "crop-97",
+    "category": "crop",
+    "label": "Pépinières forestières",
+    "path": "/commodities/crop-97.png"
+  },
+  {
+    "name": "crop-98",
+    "category": "crop",
+    "label": "Fleurs coupées",
+    "path": "/commodities/crop-98.png"
+  },
+  {
+    "name": "crop-99",
+    "category": "crop",
+    "label": "Roucou (fruit)",
+    "path": "/commodities/crop-99.png"
+  },
+  {
+    "name": "crop-100",
+    "category": "crop",
+    "label": "Autres plantes aromatiques",
+    "path": "/commodities/crop-100.png"
+  },
+  {
+    "name": "aquaculture-01",
+    "category": "aquaculture",
+    "label": "Tilapia",
+    "path": "/commodities/aquaculture-01.png"
+  },
+  {
+    "name": "aquaculture-02",
+    "category": "aquaculture",
+    "label": "Silure",
+    "path": "/commodities/aquaculture-02.png"
+  },
+  {
+    "name": "aquaculture-03",
+    "category": "aquaculture",
+    "label": "Carpe",
+    "path": "/commodities/aquaculture-03.png"
+  },
+  {
+    "name": "aquaculture-04",
+    "category": "aquaculture",
+    "label": "Heterotis",
+    "path": "/commodities/aquaculture-04.png"
+  },
+  {
+    "name": "aquaculture-05",
+    "category": "aquaculture",
+    "label": "Mâchoiron",
+    "path": "/commodities/aquaculture-05.png"
+  },
+  {
+    "name": "aquaculture-06",
+    "category": "aquaculture",
+    "label": "Ethmalose",
+    "path": "/commodities/aquaculture-06.png"
+  },
+  {
+    "name": "aquaculture-07",
+    "category": "aquaculture",
+    "label": "Mulet",
+    "path": "/commodities/aquaculture-07.png"
+  },
+  {
+    "name": "aquaculture-08",
+    "category": "aquaculture",
+    "label": "Capitaine",
+    "path": "/commodities/aquaculture-08.png"
+  },
+  {
+    "name": "aquaculture-09",
+    "category": "aquaculture",
+    "label": "Thon",
+    "path": "/commodities/aquaculture-09.png"
+  },
+  {
+    "name": "aquaculture-10",
+    "category": "aquaculture",
+    "label": "Bonite",
+    "path": "/commodities/aquaculture-10.png"
+  },
+  {
+    "name": "aquaculture-11",
+    "category": "aquaculture",
+    "label": "Sardine",
+    "path": "/commodities/aquaculture-11.png"
+  },
+  {
+    "name": "aquaculture-12",
+    "category": "aquaculture",
+    "label": "Sardinelle",
+    "path": "/commodities/aquaculture-12.png"
+  },
+  {
+    "name": "aquaculture-13",
+    "category": "aquaculture",
+    "label": "Maquereau",
+    "path": "/commodities/aquaculture-13.png"
+  },
+  {
+    "name": "aquaculture-14",
+    "category": "aquaculture",
+    "label": "Chinchard",
+    "path": "/commodities/aquaculture-14.png"
+  },
+  {
+    "name": "aquaculture-15",
+    "category": "aquaculture",
+    "label": "Barracuda",
+    "path": "/commodities/aquaculture-15.png"
+  },
+  {
+    "name": "aquaculture-16",
+    "category": "aquaculture",
+    "label": "Mérou",
+    "path": "/commodities/aquaculture-16.png"
+  },
+  {
+    "name": "aquaculture-17",
+    "category": "aquaculture",
+    "label": "Dorade",
+    "path": "/commodities/aquaculture-17.png"
+  },
+  {
+    "name": "aquaculture-18",
+    "category": "aquaculture",
+    "label": "Sole",
+    "path": "/commodities/aquaculture-18.png"
+  },
+  {
+    "name": "aquaculture-19",
+    "category": "aquaculture",
+    "label": "Carangue",
+    "path": "/commodities/aquaculture-19.png"
+  },
+  {
+    "name": "aquaculture-20",
+    "category": "aquaculture",
+    "label": "Langouste",
+    "path": "/commodities/aquaculture-20.png"
+  },
+  {
+    "name": "aquaculture-21",
+    "category": "aquaculture",
+    "label": "Crevette",
+    "path": "/commodities/aquaculture-21.png"
+  },
+  {
+    "name": "aquaculture-22",
+    "category": "aquaculture",
+    "label": "Crevette géante",
+    "path": "/commodities/aquaculture-22.png"
+  },
+  {
+    "name": "aquaculture-23",
+    "category": "aquaculture",
+    "label": "Crabe",
+    "path": "/commodities/aquaculture-23.png"
+  },
+  {
+    "name": "aquaculture-24",
+    "category": "aquaculture",
+    "label": "Homard",
+    "path": "/commodities/aquaculture-24.png"
+  },
+  {
+    "name": "aquaculture-25",
+    "category": "aquaculture",
+    "label": "Écrevisse",
+    "path": "/commodities/aquaculture-25.png"
+  },
+  {
+    "name": "aquaculture-26",
+    "category": "aquaculture",
+    "label": "Coquillages",
+    "path": "/commodities/aquaculture-26.png"
+  },
+  {
+    "name": "aquaculture-27",
+    "category": "aquaculture",
+    "label": "Moules",
+    "path": "/commodities/aquaculture-27.png"
+  },
+  {
+    "name": "aquaculture-28",
+    "category": "aquaculture",
+    "label": "Huître",
+    "path": "/commodities/aquaculture-28.png"
+  },
+  {
+    "name": "aquaculture-29",
+    "category": "aquaculture",
+    "label": "Coquille Saint-Jacques",
+    "path": "/commodities/aquaculture-29.png"
+  },
+  {
+    "name": "aquaculture-30",
+    "category": "aquaculture",
+    "label": "Poulpe",
+    "path": "/commodities/aquaculture-30.png"
+  },
+  {
+    "name": "aquaculture-31",
+    "category": "aquaculture",
+    "label": "Grenouille",
+    "path": "/commodities/aquaculture-31.png"
+  },
+  {
+    "name": "aquaculture-32",
+    "category": "aquaculture",
+    "label": "Oursins",
+    "path": "/commodities/aquaculture-32.png"
+  },
+  {
+    "name": "aquaculture-33",
+    "category": "aquaculture",
+    "label": "Concombres de mer",
+    "path": "/commodities/aquaculture-33.png"
+  },
+  {
+    "name": "aquaculture-34",
+    "category": "aquaculture",
+    "label": "Poissons séchés",
+    "path": "/commodities/aquaculture-34.png"
+  },
+  {
+    "name": "aquaculture-35",
+    "category": "aquaculture",
+    "label": "Fretin séché",
+    "path": "/commodities/aquaculture-35.png"
+  },
+  {
+    "name": "aquaculture-36",
+    "category": "aquaculture",
+    "label": "Fretin argenté",
+    "path": "/commodities/aquaculture-36.png"
+  },
+  {
+    "name": "aquaculture-37",
+    "category": "aquaculture",
+    "label": "Anguille",
+    "path": "/commodities/aquaculture-37.png"
+  },
+  {
+    "name": "aquaculture-38",
+    "category": "aquaculture",
+    "label": "Petits poissons séchés",
+    "path": "/commodities/aquaculture-38.png"
+  },
+  {
+    "name": "aquaculture-39",
+    "category": "aquaculture",
+    "label": "Alevins",
+    "path": "/commodities/aquaculture-39.png"
+  },
+  {
+    "name": "aquaculture-40",
+    "category": "aquaculture",
+    "label": "Œufs de poisson",
+    "path": "/commodities/aquaculture-40.png"
+  },
+  {
+    "name": "live-animal-01",
+    "category": "live-animal",
+    "label": "Bovin",
+    "path": "/commodities/live-animal-01.png"
+  },
+  {
+    "name": "live-animal-02",
+    "category": "live-animal",
+    "label": "Vache laitière",
+    "path": "/commodities/live-animal-02.png"
+  },
+  {
+    "name": "live-animal-03",
+    "category": "live-animal",
+    "label": "Ovin (mouton)",
+    "path": "/commodities/live-animal-03.png"
+  },
+  {
+    "name": "live-animal-04",
+    "category": "live-animal",
+    "label": "Génisse",
+    "path": "/commodities/live-animal-04.png"
+  },
+  {
+    "name": "live-animal-05",
+    "category": "live-animal",
+    "label": "Veau",
+    "path": "/commodities/live-animal-05.png"
+  },
+  {
+    "name": "live-animal-06",
+    "category": "live-animal",
+    "label": "Bélier",
+    "path": "/commodities/live-animal-06.png"
+  },
+  {
+    "name": "live-animal-07",
+    "category": "live-animal",
+    "label": "Brebis",
+    "path": "/commodities/live-animal-07.png"
+  },
+  {
+    "name": "live-animal-08",
+    "category": "live-animal",
+    "label": "Caprin (chèvre)",
+    "path": "/commodities/live-animal-08.png"
+  },
+  {
+    "name": "live-animal-09",
+    "category": "live-animal",
+    "label": "Porc",
+    "path": "/commodities/live-animal-09.png"
+  },
+  {
+    "name": "live-animal-10",
+    "category": "live-animal",
+    "label": "Truie",
+    "path": "/commodities/live-animal-10.png"
+  },
+  {
+    "name": "live-animal-11",
+    "category": "live-animal",
+    "label": "Verrat",
+    "path": "/commodities/live-animal-11.png"
+  },
+  {
+    "name": "live-animal-12",
+    "category": "live-animal",
+    "label": "Porcelet",
+    "path": "/commodities/live-animal-12.png"
+  },
+  {
+    "name": "live-animal-13",
+    "category": "live-animal",
+    "label": "Lapin",
+    "path": "/commodities/live-animal-13.png"
+  },
+  {
+    "name": "live-animal-14",
+    "category": "live-animal",
+    "label": "Poule pondeuse",
+    "path": "/commodities/live-animal-14.png"
+  },
+  {
+    "name": "live-animal-15",
+    "category": "live-animal",
+    "label": "Coq reproducteur",
+    "path": "/commodities/live-animal-15.png"
+  },
+  {
+    "name": "live-animal-16",
+    "category": "live-animal",
+    "label": "Canard",
+    "path": "/commodities/live-animal-16.png"
+  },
+  {
+    "name": "live-animal-17",
+    "category": "live-animal",
+    "label": "Oie",
+    "path": "/commodities/live-animal-17.png"
+  },
+  {
+    "name": "live-animal-18",
+    "category": "live-animal",
+    "label": "Cane",
+    "path": "/commodities/live-animal-18.png"
+  },
+  {
+    "name": "live-animal-19",
+    "category": "live-animal",
+    "label": "Pintade",
+    "path": "/commodities/live-animal-19.png"
+  },
+  {
+    "name": "live-animal-20",
+    "category": "live-animal",
+    "label": "Dindon",
+    "path": "/commodities/live-animal-20.png"
+  },
+  {
+    "name": "live-animal-21",
+    "category": "live-animal",
+    "label": "Poulet de chair",
+    "path": "/commodities/live-animal-21.png"
+  },
+  {
+    "name": "live-animal-22",
+    "category": "live-animal",
+    "label": "Pintadeau",
+    "path": "/commodities/live-animal-22.png"
+  },
+  {
+    "name": "live-animal-23",
+    "category": "live-animal",
+    "label": "Caille",
+    "path": "/commodities/live-animal-23.png"
+  },
+  {
+    "name": "live-animal-24",
+    "category": "live-animal",
+    "label": "Cailleteau",
+    "path": "/commodities/live-animal-24.png"
+  },
+  {
+    "name": "live-animal-25",
+    "category": "live-animal",
+    "label": "Poussin chair",
+    "path": "/commodities/live-animal-25.png"
+  },
+  {
+    "name": "live-animal-26",
+    "category": "live-animal",
+    "label": "Poussin pondeuse",
+    "path": "/commodities/live-animal-26.png"
+  },
+  {
+    "name": "live-animal-27",
+    "category": "live-animal",
+    "label": "Poussin d'un jour",
+    "path": "/commodities/live-animal-27.png"
+  },
+  {
+    "name": "live-animal-28",
+    "category": "live-animal",
+    "label": "Caneton",
+    "path": "/commodities/live-animal-28.png"
+  },
+  {
+    "name": "live-animal-29",
+    "category": "live-animal",
+    "label": "Escargot vivant",
+    "path": "/commodities/live-animal-29.png"
+  },
+  {
+    "name": "live-animal-30",
+    "category": "live-animal",
+    "label": "Escargot géant",
+    "path": "/commodities/live-animal-30.png"
+  },
+  {
+    "name": "live-animal-31",
+    "category": "live-animal",
+    "label": "Essaim d'abeilles",
+    "path": "/commodities/live-animal-31.png"
+  },
+  {
+    "name": "live-animal-32",
+    "category": "live-animal",
+    "label": "Ruche d'abeilles",
+    "path": "/commodities/live-animal-32.png"
+  },
+  {
+    "name": "animal-product-01",
+    "category": "animal-product",
+    "label": "Œufs de poule",
+    "path": "/commodities/animal-product-01.png"
+  },
+  {
+    "name": "animal-product-02",
+    "category": "animal-product",
+    "label": "Œufs de pintade",
+    "path": "/commodities/animal-product-02.png"
+  },
+  {
+    "name": "animal-product-03",
+    "category": "animal-product",
+    "label": "Œufs de dinde",
+    "path": "/commodities/animal-product-03.png"
+  },
+  {
+    "name": "animal-product-04",
+    "category": "animal-product",
+    "label": "Œufs de cane",
+    "path": "/commodities/animal-product-04.png"
+  },
+  {
+    "name": "animal-product-05",
+    "category": "animal-product",
+    "label": "Œufs de caille",
+    "path": "/commodities/animal-product-05.png"
+  },
+  {
+    "name": "animal-product-06",
+    "category": "animal-product",
+    "label": "Œufs de caille blancs",
+    "path": "/commodities/animal-product-06.png"
+  },
+  {
+    "name": "animal-product-07",
+    "category": "animal-product",
+    "label": "Œufs à couver",
+    "path": "/commodities/animal-product-07.png"
+  },
+  {
+    "name": "animal-product-08",
+    "category": "animal-product",
+    "label": "Lait de vache",
+    "path": "/commodities/animal-product-08.png"
+  },
+  {
+    "name": "animal-product-09",
+    "category": "animal-product",
+    "label": "Lait de chèvre",
+    "path": "/commodities/animal-product-09.png"
+  },
+  {
+    "name": "animal-product-10",
+    "category": "animal-product",
+    "label": "Yaourt",
+    "path": "/commodities/animal-product-10.png"
+  },
+  {
+    "name": "animal-product-11",
+    "category": "animal-product",
+    "label": "Beurre",
+    "path": "/commodities/animal-product-11.png"
+  },
+  {
+    "name": "animal-product-12",
+    "category": "animal-product",
+    "label": "Crème fraîche",
+    "path": "/commodities/animal-product-12.png"
+  },
+  {
+    "name": "animal-product-13",
+    "category": "animal-product",
+    "label": "Fromage",
+    "path": "/commodities/animal-product-13.png"
+  },
+  {
+    "name": "animal-product-14",
+    "category": "animal-product",
+    "label": "Miel",
+    "path": "/commodities/animal-product-14.png"
+  },
+  {
+    "name": "animal-product-15",
+    "category": "animal-product",
+    "label": "Viande de bœuf",
+    "path": "/commodities/animal-product-15.png"
+  },
+  {
+    "name": "animal-product-16",
+    "category": "animal-product",
+    "label": "Viande de veau",
+    "path": "/commodities/animal-product-16.png"
+  },
+  {
+    "name": "animal-product-17",
+    "category": "animal-product",
+    "label": "Côtes de porc",
+    "path": "/commodities/animal-product-17.png"
+  },
+  {
+    "name": "animal-product-18",
+    "category": "animal-product",
+    "label": "Côtelettes de mouton",
+    "path": "/commodities/animal-product-18.png"
+  },
+  {
+    "name": "animal-product-19",
+    "category": "animal-product",
+    "label": "Viande de porc",
+    "path": "/commodities/animal-product-19.png"
+  },
+  {
+    "name": "animal-product-20",
+    "category": "animal-product",
+    "label": "Viande hachée",
+    "path": "/commodities/animal-product-20.png"
+  },
+  {
+    "name": "animal-product-21",
+    "category": "animal-product",
+    "label": "Abats bovins",
+    "path": "/commodities/animal-product-21.png"
+  },
+  {
+    "name": "animal-product-22",
+    "category": "animal-product",
+    "label": "Poulet entier",
+    "path": "/commodities/animal-product-22.png"
+  },
+  {
+    "name": "animal-product-23",
+    "category": "animal-product",
+    "label": "Viande de mouton",
+    "path": "/commodities/animal-product-23.png"
+  },
+  {
+    "name": "animal-product-24",
+    "category": "animal-product",
+    "label": "Poisson fumé",
+    "path": "/commodities/animal-product-24.png"
+  },
+  {
+    "name": "animal-product-25",
+    "category": "animal-product",
+    "label": "Poisson séché",
+    "path": "/commodities/animal-product-25.png"
+  },
+  {
+    "name": "animal-product-26",
+    "category": "animal-product",
+    "label": "Viande de porc en tranche",
+    "path": "/commodities/animal-product-26.png"
+  },
+  {
+    "name": "animal-product-27",
+    "category": "animal-product",
+    "label": "Viande de volaille",
+    "path": "/commodities/animal-product-27.png"
+  },
+  {
+    "name": "animal-product-28",
+    "category": "animal-product",
+    "label": "Poulet prêt à cuire",
+    "path": "/commodities/animal-product-28.png"
+  },
+  {
+    "name": "animal-product-29",
+    "category": "animal-product",
+    "label": "Viande de chèvre",
+    "path": "/commodities/animal-product-29.png"
+  },
+  {
+    "name": "animal-product-30",
+    "category": "animal-product",
+    "label": "Abats de volaille",
+    "path": "/commodities/animal-product-30.png"
+  },
+  {
+    "name": "animal-product-31",
+    "category": "animal-product",
+    "label": "Viande de lapin",
+    "path": "/commodities/animal-product-31.png"
+  },
+  {
+    "name": "animal-product-32",
+    "category": "animal-product",
+    "label": "Poisson frais",
+    "path": "/commodities/animal-product-32.png"
+  },
+  {
+    "name": "animal-product-33",
+    "category": "animal-product",
+    "label": "Crevettes",
+    "path": "/commodities/animal-product-33.png"
+  },
+  {
+    "name": "animal-product-34",
+    "category": "animal-product",
+    "label": "Crevettes séchées",
+    "path": "/commodities/animal-product-34.png"
+  },
+  {
+    "name": "animal-product-35",
+    "category": "animal-product",
+    "label": "Chair d'escargot",
+    "path": "/commodities/animal-product-35.png"
+  },
+  {
+    "name": "animal-product-36",
+    "category": "animal-product",
+    "label": "Viande en morceaux",
+    "path": "/commodities/animal-product-36.png"
+  },
+  {
+    "name": "animal-product-37",
+    "category": "animal-product",
+    "label": "Abats",
+    "path": "/commodities/animal-product-37.png"
+  },
+  {
+    "name": "animal-product-38",
+    "category": "animal-product",
+    "label": "Escargots décortiqués",
+    "path": "/commodities/animal-product-38.png"
+  },
+  {
+    "name": "animal-product-39",
+    "category": "animal-product",
+    "label": "Escargots bruns",
+    "path": "/commodities/animal-product-39.png"
+  },
+  {
+    "name": "animal-product-40",
+    "category": "animal-product",
+    "label": "Escargots géants",
+    "path": "/commodities/animal-product-40.png"
+  },
+  {
+    "name": "animal-product-41",
+    "category": "animal-product",
+    "label": "Escargots transformés",
+    "path": "/commodities/animal-product-41.png"
+  },
+  {
+    "name": "animal-product-42",
+    "category": "animal-product",
+    "label": "Produit d'escargot préparé",
+    "path": "/commodities/animal-product-42.png"
+  },
+  {
+    "name": "byproduct-01",
+    "category": "byproduct",
+    "label": "Fumier bovin",
+    "path": "/commodities/byproduct-01.png"
+  },
+  {
+    "name": "byproduct-02",
+    "category": "byproduct",
+    "label": "Fumier ovin",
+    "path": "/commodities/byproduct-02.png"
+  },
+  {
+    "name": "byproduct-03",
+    "category": "byproduct",
+    "label": "Fumier caprin",
+    "path": "/commodities/byproduct-03.png"
+  },
+  {
+    "name": "byproduct-04",
+    "category": "byproduct",
+    "label": "Fientes de volaille",
+    "path": "/commodities/byproduct-04.png"
+  },
+  {
+    "name": "byproduct-05",
+    "category": "byproduct",
+    "label": "Compost",
+    "path": "/commodities/byproduct-05.png"
+  },
+  {
+    "name": "byproduct-06",
+    "category": "byproduct",
+    "label": "Lisier",
+    "path": "/commodities/byproduct-06.png"
+  },
+  {
+    "name": "byproduct-07",
+    "category": "byproduct",
+    "label": "Paille",
+    "path": "/commodities/byproduct-07.png"
+  },
+  {
+    "name": "byproduct-08",
+    "category": "byproduct",
+    "label": "Son",
+    "path": "/commodities/byproduct-08.png"
+  },
+  {
+    "name": "byproduct-09",
+    "category": "byproduct",
+    "label": "Tourteau d'arachide",
+    "path": "/commodities/byproduct-09.png"
+  },
+  {
+    "name": "byproduct-10",
+    "category": "byproduct",
+    "label": "Tourteau de coton",
+    "path": "/commodities/byproduct-10.png"
+  },
+  {
+    "name": "byproduct-11",
+    "category": "byproduct",
+    "label": "Tourteau de soja",
+    "path": "/commodities/byproduct-11.png"
+  },
+  {
+    "name": "byproduct-12",
+    "category": "byproduct",
+    "label": "Tourteau de palmiste",
+    "path": "/commodities/byproduct-12.png"
+  },
+  {
+    "name": "byproduct-13",
+    "category": "byproduct",
+    "label": "Coques de cacao",
+    "path": "/commodities/byproduct-13.png"
+  },
+  {
+    "name": "byproduct-14",
+    "category": "byproduct",
+    "label": "Pulpe de cacao",
+    "path": "/commodities/byproduct-14.png"
+  },
+  {
+    "name": "byproduct-15",
+    "category": "byproduct",
+    "label": "Gousses de vanille",
+    "path": "/commodities/byproduct-15.png"
+  },
+  {
+    "name": "byproduct-16",
+    "category": "byproduct",
+    "label": "Graines de coton",
+    "path": "/commodities/byproduct-16.png"
+  },
+  {
+    "name": "byproduct-17",
+    "category": "byproduct",
+    "label": "Pailles de riz",
+    "path": "/commodities/byproduct-17.png"
+  },
+  {
+    "name": "byproduct-18",
+    "category": "byproduct",
+    "label": "Balles de riz",
+    "path": "/commodities/byproduct-18.png"
+  },
+  {
+    "name": "byproduct-19",
+    "category": "byproduct",
+    "label": "Coques de cajou",
+    "path": "/commodities/byproduct-19.png"
+  },
+  {
+    "name": "byproduct-20",
+    "category": "byproduct",
+    "label": "Pulpe de café",
+    "path": "/commodities/byproduct-20.png"
+  },
+  {
+    "name": "byproduct-21",
+    "category": "byproduct",
+    "label": "Drêches de café",
+    "path": "/commodities/byproduct-21.png"
+  },
+  {
+    "name": "byproduct-22",
+    "category": "byproduct",
+    "label": "Graines de néré",
+    "path": "/commodities/byproduct-22.png"
+  },
+  {
+    "name": "byproduct-23",
+    "category": "byproduct",
+    "label": "Coques de palmiste",
+    "path": "/commodities/byproduct-23.png"
+  },
+  {
+    "name": "byproduct-24",
+    "category": "byproduct",
+    "label": "Fibres de coco",
+    "path": "/commodities/byproduct-24.png"
+  },
+  {
+    "name": "byproduct-25",
+    "category": "byproduct",
+    "label": "Bois de chauffe",
+    "path": "/commodities/byproduct-25.png"
+  },
+  {
+    "name": "byproduct-26",
+    "category": "byproduct",
+    "label": "Charbon de bois",
+    "path": "/commodities/byproduct-26.png"
+  },
+  {
+    "name": "byproduct-27",
+    "category": "byproduct",
+    "label": "Os",
+    "path": "/commodities/byproduct-27.png"
+  },
+  {
+    "name": "byproduct-28",
+    "category": "byproduct",
+    "label": "Graisse animale",
+    "path": "/commodities/byproduct-28.png"
+  },
+  {
+    "name": "byproduct-29",
+    "category": "byproduct",
+    "label": "Écorces broyées",
+    "path": "/commodities/byproduct-29.png"
+  },
+  {
+    "name": "byproduct-30",
+    "category": "byproduct",
+    "label": "Sciures",
+    "path": "/commodities/byproduct-30.png"
+  },
+  {
+    "name": "byproduct-31",
+    "category": "byproduct",
+    "label": "Résidus agricoles",
+    "path": "/commodities/byproduct-31.png"
+  },
+  {
+    "name": "byproduct-32",
+    "category": "byproduct",
+    "label": "Paille hachée",
+    "path": "/commodities/byproduct-32.png"
+  },
+  {
+    "name": "byproduct-33",
+    "category": "byproduct",
+    "label": "Fourrage vert",
+    "path": "/commodities/byproduct-33.png"
+  },
+  {
+    "name": "byproduct-34",
+    "category": "byproduct",
+    "label": "Aliment protéiné",
+    "path": "/commodities/byproduct-34.png"
+  },
+  {
+    "name": "byproduct-35",
+    "category": "byproduct",
+    "label": "Maïs grain",
+    "path": "/commodities/byproduct-35.png"
+  },
+  {
+    "name": "byproduct-36",
+    "category": "byproduct",
+    "label": "Aliment composé",
+    "path": "/commodities/byproduct-36.png"
+  },
+  {
+    "name": "processed-01",
+    "category": "processed",
+    "label": "Farine de manioc",
+    "path": "/commodities/processed-01.png"
+  },
+  {
+    "name": "processed-02",
+    "category": "processed",
+    "label": "Attiéké",
+    "path": "/commodities/processed-02.png"
+  },
+  {
+    "name": "processed-03",
+    "category": "processed",
+    "label": "Placali",
+    "path": "/commodities/processed-03.png"
+  },
+  {
+    "name": "processed-04",
+    "category": "processed",
+    "label": "Gari",
+    "path": "/commodities/processed-04.png"
+  },
+  {
+    "name": "processed-05",
+    "category": "processed",
+    "label": "Foufou",
+    "path": "/commodities/processed-05.png"
+  },
+  {
+    "name": "processed-06",
+    "category": "processed",
+    "label": "Foufou préparé",
+    "path": "/commodities/processed-06.png"
+  },
+  {
+    "name": "processed-07",
+    "category": "processed",
+    "label": "Huile de palme",
+    "path": "/commodities/processed-07.png"
+  },
+  {
+    "name": "processed-08",
+    "category": "processed",
+    "label": "Huile de palmiste",
+    "path": "/commodities/processed-08.png"
+  },
+  {
+    "name": "processed-09",
+    "category": "processed",
+    "label": "Huile d'arachide",
+    "path": "/commodities/processed-09.png"
+  },
+  {
+    "name": "processed-10",
+    "category": "processed",
+    "label": "Huile de coton",
+    "path": "/commodities/processed-10.png"
+  },
+  {
+    "name": "processed-11",
+    "category": "processed",
+    "label": "Huile de coco",
+    "path": "/commodities/processed-11.png"
+  },
+  {
+    "name": "processed-12",
+    "category": "processed",
+    "label": "Huile raffinée",
+    "path": "/commodities/processed-12.png"
+  },
+  {
+    "name": "processed-13",
+    "category": "processed",
+    "label": "Beurre de karité",
+    "path": "/commodities/processed-13.png"
+  },
+  {
+    "name": "processed-14",
+    "category": "processed",
+    "label": "Noix de karité",
+    "path": "/commodities/processed-14.png"
+  },
+  {
+    "name": "processed-15",
+    "category": "processed",
+    "label": "Poudre de baobab",
+    "path": "/commodities/processed-15.png"
+  },
+  {
+    "name": "processed-16",
+    "category": "processed",
+    "label": "Confiture",
+    "path": "/commodities/processed-16.png"
+  },
+  {
+    "name": "processed-17",
+    "category": "processed",
+    "label": "Jus de fruits",
+    "path": "/commodities/processed-17.png"
+  },
+  {
+    "name": "processed-18",
+    "category": "processed",
+    "label": "Fruits séchés",
+    "path": "/commodities/processed-18.png"
+  },
+  {
+    "name": "processed-19",
+    "category": "processed",
+    "label": "Café vert",
+    "path": "/commodities/processed-19.png"
+  },
+  {
+    "name": "processed-20",
+    "category": "processed",
+    "label": "Café torréfié",
+    "path": "/commodities/processed-20.png"
+  },
+  {
+    "name": "processed-21",
+    "category": "processed",
+    "label": "Cacao en poudre",
+    "path": "/commodities/processed-21.png"
+  },
+  {
+    "name": "processed-22",
+    "category": "processed",
+    "label": "Pâte de cacao",
+    "path": "/commodities/processed-22.png"
+  },
+  {
+    "name": "processed-23",
+    "category": "processed",
+    "label": "Chocolat",
+    "path": "/commodities/processed-23.png"
+  },
+  {
+    "name": "processed-24",
+    "category": "processed",
+    "label": "Bissap séché (fleurs)",
+    "path": "/commodities/processed-24.png"
+  },
+  {
+    "name": "processed-25",
+    "category": "processed",
+    "label": "Riz étuvé",
+    "path": "/commodities/processed-25.png"
+  },
+  {
+    "name": "processed-26",
+    "category": "processed",
+    "label": "Riz parfumé",
+    "path": "/commodities/processed-26.png"
+  },
+  {
+    "name": "processed-27",
+    "category": "processed",
+    "label": "Sucre",
+    "path": "/commodities/processed-27.png"
+  },
+  {
+    "name": "processed-28",
+    "category": "processed",
+    "label": "Vin de palme",
+    "path": "/commodities/processed-28.png"
+  },
+  {
+    "name": "processed-29",
+    "category": "processed",
+    "label": "Sirop",
+    "path": "/commodities/processed-29.png"
+  },
+  {
+    "name": "processed-30",
+    "category": "processed",
+    "label": "Bissap séché (calices)",
+    "path": "/commodities/processed-30.png"
+  },
+  {
+    "name": "processed-31",
+    "category": "processed",
+    "label": "Graines brunes",
+    "path": "/commodities/processed-31.png"
+  },
+  {
+    "name": "processed-32",
+    "category": "processed",
+    "label": "Graines blondes",
+    "path": "/commodities/processed-32.png"
+  },
+  {
+    "name": "processed-33",
+    "category": "processed",
+    "label": "Graines dorées",
+    "path": "/commodities/processed-33.png"
+  },
+  {
+    "name": "processed-34",
+    "category": "processed",
+    "label": "Graines claires",
+    "path": "/commodities/processed-34.png"
+  },
+  {
+    "name": "processed-35",
+    "category": "processed",
+    "label": "Maïs concassé",
+    "path": "/commodities/processed-35.png"
+  },
+  {
+    "name": "processed-36",
+    "category": "processed",
+    "label": "Graines foncées",
+    "path": "/commodities/processed-36.png"
+  }
+]

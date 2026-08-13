@@ -10,8 +10,8 @@ import {
   type OrganizationSummary,
 } from './api'
 import { AccountDialog, AuthenticationBoundary, personaLabel } from './auth-ui'
+import { CommodityVisual } from './product-image'
 import { ErpWorkspace } from './erp'
-import { CommodityIcon } from './icons'
 import { OperationsWorkspace } from './operations'
 import { SettingsWorkspace } from './settings'
 import { useSession } from './session'
@@ -172,7 +172,7 @@ function MarketTable({ commodities, markets, loading, compact = false }: Pick<Da
   const rows = markets.length ? markets : fallback
   if (loading && rows.length === 0) return <LoadingRows />
   if (rows.length === 0) return <EmptyState title="Aucun marché disponible" detail="Le référentiel produit apparaîtra après la connexion à l'API." />
-  return <div className="table-wrap"><table><thead><tr><th>Produit</th><th>Volume</th><th>Transactions</th><th>Valeur</th><th>État</th></tr></thead><tbody>{rows.map((item) => { const commodity = commodities.find((entry) => entry.code === item.commodityCode); return <tr key={`${item.commodityCode}-${item.unitCode}`}><td><CommodityIcon name={commodity?.iconName} code={item.commodityCode} /><strong>{commodity?.name.fr ?? commodityName(item.commodityCode, commodities)}</strong><small>{item.commodityCode}</small></td><td>{quantity(item.volume, item.scale)} <small>{item.unitCode}</small></td><td>{item.tradeCount}</td><td><strong>{money(item.grossAmountMinor)}</strong></td><td><span className={`status-pill ${item.tradeCount ? 'is-live' : ''}`}>{item.tradeCount ? 'Actif' : 'Référencé'}</span></td></tr> })}</tbody></table></div>
+  return <div className="table-wrap"><table><thead><tr><th>Produit</th><th>Volume</th><th>Transactions</th><th>Valeur</th><th>État</th></tr></thead><tbody>{rows.map((item) => { const commodity = commodities.find((entry) => entry.code === item.commodityCode); return <tr key={`${item.commodityCode}-${item.unitCode}`}><td><CommodityVisual imageName={commodity?.imageName} iconName={commodity?.iconName} code={item.commodityCode} /><strong>{commodity?.name.fr ?? commodityName(item.commodityCode, commodities)}</strong><small>{item.commodityCode}</small></td><td>{quantity(item.volume, item.scale)} <small>{item.unitCode}</small></td><td>{item.tradeCount}</td><td><strong>{money(item.grossAmountMinor)}</strong></td><td><span className={`status-pill ${item.tradeCount ? 'is-live' : ''}`}>{item.tradeCount ? 'Actif' : 'Référencé'}</span></td></tr> })}</tbody></table></div>
 }
 
 function EventList({ events, loading, detailed = false }: { events: IntegrationEvent[]; loading: boolean; detailed?: boolean }) {

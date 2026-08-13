@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Inject, Param, Put, Req } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Req } from "@nestjs/common";
 import type { Request } from "express";
 
 import { RequestActorService } from "../identity/request-actor.service.js";
@@ -34,6 +34,7 @@ export class ReferenceDataAdminController {
   async upsertCommodity(@Req() request: Request, @Param("code") code: string, @Body() body: unknown) {
     const actor = await this.actors.fromRequest(request);
     const iconName = optionalString(body, "iconName");
+    const imageName = optionalString(body, "imageName");
     const defaultUnitCode = optionalString(body, "defaultUnitCode");
     const record = await this.referenceData.upsertCommodity(actor, {
       code: normalizeCode(code),
@@ -41,6 +42,7 @@ export class ReferenceDataAdminController {
       nameEn: stringValue(body, "nameEn"),
       nameFr: stringValue(body, "nameFr"),
       ...(iconName ? { iconName } : {}),
+      ...(imageName ? { imageName } : {}),
       ...(defaultUnitCode ? { defaultUnitCode: defaultUnitCode.toUpperCase() } : {}),
       allowedUnitCodes: stringArray(body, "allowedUnitCodes").map((c) => c.toUpperCase()),
       isPublic: boolValue(body, "isPublic"),
@@ -73,10 +75,26 @@ export class ReferenceDataAdminController {
     return { data: record };
   }
 
+  @Delete("units/:code")
+  @HttpCode(204)
+  async deleteUnit(@Req() request: Request, @Param("code") code: string): Promise<void> {
+    const actor = await this.actors.fromRequest(request);
+    await this.referenceData.deleteUnit(actor, normalizeCode(code));
+  }
+
   @Get("inspection-schemes")
   async listSchemes(@Req() request: Request) {
     const actor = await this.actors.fromRequest(request);
     return { data: await this.referenceData.listAdminSchemes(actor) };
+  }
+
+  @Post("inspection-schemes")
+  async createScheme(@Req() request: Request, @Body() body: unknown) {
+    const actor = await this.actors.fromRequest(request);
+    const commodityCode = normalizeCode(stringValue(body, "commodityCode"));
+    const type = enumValue(body, "type", inspectionTypes);
+    const record = await this.referenceData.createScheme(actor, readSchemeInput(body, commodityCode, type));
+    return { data: record };
   }
 
   @Put("inspection-schemes/:commodityCode/:type")
@@ -87,19 +105,25 @@ export class ReferenceDataAdminController {
     @Body() body: unknown,
   ) {
     const actor = await this.actors.fromRequest(request);
-    const samplingHint = optionalString(body, "samplingHint");
-    const record = await this.referenceData.upsertScheme(actor, {
-      commodityCode: normalizeCode(commodityCode),
-      type: assertEnum(type, inspectionTypes, "type"),
-      labelEn: stringValue(body, "labelEn"),
-      labelFr: stringValue(body, "labelFr"),
-      ...(samplingHint ? { samplingHint } : {}),
-      metrics: readMetrics(body),
-      grades: readGrades(body),
-      status: enumValue(body, "status", schemeStatuses),
-    });
+    const normalizedCode = normalizeCode(commodityCode);
+    const normalizedType = assertEnum(type, inspectionTypes, "type");
+    const record = await this.referenceData.upsertScheme(actor, readSchemeInput(body, normalizedCode, normalizedType));
     return { data: record };
   }
+}
+
+function readSchemeInput(body: unknown, commodityCode: string, type: InspectionType) {
+  const samplingHint = optionalString(body, "samplingHint");
+  return {
+    commodityCode,
+    type,
+    labelEn: stringValue(body, "labelEn"),
+    labelFr: stringValue(body, "labelFr"),
+    ...(samplingHint ? { samplingHint } : {}),
+    metrics: readMetrics(body),
+    grades: readGrades(body),
+    status: enumValue(body, "status", schemeStatuses),
+  };
 }
 
 function readMetrics(body: unknown): readonly InspectionMetric[] {
@@ -117,8 +141,14 @@ function readMetrics(body: unknown): readonly InspectionMetric[] {
     const text = optionalString(standard, "text");
     return {
       code: normalizeCode(stringValue(item, "code")),
-      label: { en: stringValue(label, "en"), fr: stringValue(label, "fr") },
-      whatIsChecked: { en: stringValue(check, "en"), fr: stringValue(check, "fr") },
+      label: {
+        en: stringValue(label, "en", `metrics[${index}].label.en`),
+        fr: stringValue(label, "fr", `metrics[${index}].label.fr`),
+      },
+      whatIsChecked: {
+        en: stringValue(check, "en", `metrics[${index}].whatIsChecked.en`),
+        fr: stringValue(check, "fr", `metrics[${index}].whatIsChecked.fr`),
+      },
       resultKind: enumValue(item, "resultKind", resultKinds),
       standard: {
         operator: enumValue(standard, "operator", standardOperators),
@@ -142,7 +172,10 @@ function readGrades(body: unknown): readonly InspectionGrade[] {
     const minScore = optionalNumber(item, "minScore");
     return {
       code: normalizeCode(stringValue(item, "code")),
-      label: { en: stringValue(label, "en"), fr: stringValue(label, "fr") },
+      label: {
+        en: stringValue(label, "en", `grades[${index}].label.en`),
+        fr: stringValue(label, "fr", `grades[${index}].label.fr`),
+      },
       rank: integer(item, "rank"),
       ...(minScore !== undefined ? { minScore } : {}),
       ...("requiredPasses" in item ? { requiredPasses: stringArray(item, "requiredPasses").map(normalizeCode) } : {}),
@@ -156,10 +189,10 @@ function normalizeCode(value: string): string {
   return trimmed.toUpperCase().replaceAll(/\s+/g, "_");
 }
 
-function stringValue(body: unknown, name: string): string {
-  if (typeof body !== "object" || body === null || !(name in body)) throw new BadRequestException(`${name} is required`);
+function stringValue(body: unknown, name: string, displayName = name): string {
+  if (typeof body !== "object" || body === null || !(name in body)) throw new BadRequestException(`${displayName} is required`);
   const value = (body as Record<string, unknown>)[name];
-  if (typeof value !== "string" || value.trim().length === 0) throw new BadRequestException(`${name} must be a non-empty string`);
+  if (typeof value !== "string" || value.trim().length === 0) throw new BadRequestException(`${displayName} must be a non-empty string`);
   return value.trim();
 }
 

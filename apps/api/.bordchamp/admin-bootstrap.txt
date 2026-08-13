@@ -3,21 +3,21 @@
   Email:         admin@bordchamps.com
   Password:      Qwerty$1
   Display name:  Admin System
-  User ID:       748823be-c9a8-4916-9792-5297d71a35ea
-  Organization:  BordChamp Exchange (id=a3773fa4-66fd-4218-8490-08cf89485031)
+  User ID:       d9e5e13b-7cc4-4153-80c1-68f0c48b0a44
+  Organization:  BordChamp Exchange (id=520b90bb-f01c-4a91-9eaf-5978537f7154)
   Persona:       ExchangeAdmin
   ----- MFA enrollment (scan in your authenticator app) -----
-  otpauth URI:   otpauth://totp/BordChamp:BordChamp%3Aadmin%40bordchamps.com?issuer=BordChamp&secret=OBTNX7LKQAJBABRYTIPYSR2FJNTRM6CO&algorithm=SHA1&digits=6&period=30
-  Base32 secret: OBTNX7LKQAJBABRYTIPYSR2FJNTRM6CO
+  otpauth URI:   otpauth://totp/BordChamp:BordChamp%3Aadmin%40bordchamps.com?issuer=BordChamp&secret=WRFA77SPJ5YNNSVA7BHEV3SNKTY62A35&algorithm=SHA1&digits=6&period=30
+  Base32 secret: WRFA77SPJ5YNNSVA7BHEV3SNKTY62A35
   ----- Recovery codes (store safely) -----
-    - K2M2Q-
-    - K3PA4-
-    - NWKAV-
-    - QZEWE-
-    - SKHAT-
-    - K8CS9-
-    - 3ZA3E-
-    - T2CFG-
-    - USB2T-
-    - 5YB2S-
+    - WQBPG-
+    - R5UXK-
+    - BB38L-
+    - U4ENG-
+    - ZM98H-
+    - VSKAC-
+    - KYHKF-
+    - S6Y2W-
+    - 3HZLL-
+    - PPCGJ-
 ==================================================================

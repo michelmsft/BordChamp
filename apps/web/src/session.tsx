@@ -6,6 +6,8 @@ import {
   getAccessToken,
   login as apiLogin,
   logout as apiLogout,
+  expireSession,
+  onSessionExpired,
   refresh as apiRefresh,
   register as apiRegister,
   setAccessToken,
@@ -63,6 +65,7 @@ async function apiCall<T>(path: string, init?: RequestInit): Promise<T> {
   if (response.status === 401) {
     const refreshed = await apiRefresh()
     if (refreshed) response = await attempt()
+    if (!refreshed || response.status === 401) expireSession()
   }
   const parsed = (await response.json().catch(() => null)) as { data?: T; message?: string | string[] } | null
   if (!response.ok) {
@@ -90,6 +93,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setSession(value)
     setStatus(value ? 'authenticated' : 'unauthenticated')
   }, [])
+
+  useEffect(() => onSessionExpired(() => {
+    setSession(null)
+    setRegisterState(null)
+    setMfaState(null)
+    setLastRecoveryCodes(null)
+    setStatus('unauthenticated')
+  }), [])
 
   useEffect(() => {
     if (bootstrapped.current) return

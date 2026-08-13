@@ -24,6 +24,7 @@ export interface PublicCommodity {
     readonly fr: string;
   };
   readonly iconName?: string;
+  readonly imageName?: string;
   readonly public: true;
 }
 
@@ -35,6 +36,7 @@ export interface AdminCommodity {
     readonly fr: string;
   };
   readonly iconName?: string;
+  readonly imageName?: string;
   readonly defaultUnitCode?: string;
   readonly allowedUnitCodes: readonly string[];
   readonly isPublic: boolean;
@@ -48,6 +50,7 @@ export interface UpsertCommodityInput {
   readonly nameEn: string;
   readonly nameFr: string;
   readonly iconName?: string;
+  readonly imageName?: string;
   readonly defaultUnitCode?: string;
   readonly allowedUnitCodes?: readonly string[];
   readonly isPublic: boolean;
@@ -65,6 +68,7 @@ interface CommodityTableEntity extends TableEntity {
   readonly nameEn: string;
   readonly nameFr: string;
   readonly iconName?: string;
+  readonly imageName?: string;
   readonly defaultUnitCode?: string;
   readonly allowedUnitCodesJson?: string;
   readonly isPublic: boolean;
@@ -127,6 +131,7 @@ function toPublic(admin: AdminCommodity): PublicCommodity {
     category: admin.category,
     name: admin.name,
     ...(admin.iconName ? { iconName: admin.iconName } : {}),
+    ...(admin.imageName ? { imageName: admin.imageName } : {}),
     public: true,
   };
 }
@@ -154,6 +159,7 @@ export class InMemoryCommodityRepository implements CommodityRepository {
       category: input.category,
       name: { en: input.nameEn, fr: input.nameFr },
       ...(input.iconName ? { iconName: input.iconName } : {}),
+      ...(input.imageName ? { imageName: input.imageName } : {}),
       ...(input.defaultUnitCode ? { defaultUnitCode: input.defaultUnitCode } : {}),
       allowedUnitCodes: input.allowedUnitCodes ?? [],
       isPublic: input.isPublic,
@@ -177,7 +183,7 @@ export class AzureTableCommodityRepository implements CommodityRepository {
           "isPublic eq true",
           "status eq 'active'",
         ].join(" and "),
-        select: ["RowKey", "category", "nameEn", "nameFr", "iconName"],
+        select: ["RowKey", "category", "nameEn", "nameFr", "iconName", "imageName"],
       },
     });
 
@@ -187,6 +193,7 @@ export class AzureTableCommodityRepository implements CommodityRepository {
         category: entity.category,
         name: { en: entity.nameEn, fr: entity.nameFr },
         ...(entity.iconName ? { iconName: entity.iconName } : {}),
+        ...(entity.imageName ? { imageName: entity.imageName } : {}),
         public: true,
       });
     }
@@ -227,6 +234,7 @@ export class AzureTableCommodityRepository implements CommodityRepository {
       nameEn: input.nameEn,
       nameFr: input.nameFr,
       ...(input.iconName ? { iconName: input.iconName } : {}),
+      ...(input.imageName ? { imageName: input.imageName } : {}),
       ...(input.defaultUnitCode ? { defaultUnitCode: input.defaultUnitCode } : {}),
       ...(input.allowedUnitCodes
         ? { allowedUnitCodesJson: JSON.stringify(input.allowedUnitCodes) }
@@ -246,6 +254,7 @@ function toAdmin(entity: CommodityTableEntity): AdminCommodity {
     category: entity.category,
     name: { en: entity.nameEn, fr: entity.nameFr },
     ...(entity.iconName ? { iconName: entity.iconName } : {}),
+    ...(entity.imageName ? { imageName: entity.imageName } : {}),
     ...(entity.defaultUnitCode ? { defaultUnitCode: entity.defaultUnitCode } : {}),
     allowedUnitCodes: entity.allowedUnitCodesJson
       ? (JSON.parse(entity.allowedUnitCodesJson) as string[])

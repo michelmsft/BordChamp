@@ -39,7 +39,7 @@ describe("AzureTableCommodityRepository", () => {
       queryOptions: {
         filter:
           "PartitionKey eq 'PUBLIC_COMMODITY' and isPublic eq true and status eq 'active'",
-        select: ["RowKey", "category", "nameEn", "nameFr", "iconName"],
+        select: ["RowKey", "category", "nameEn", "nameFr", "iconName", "imageName"],
       },
     });
   });

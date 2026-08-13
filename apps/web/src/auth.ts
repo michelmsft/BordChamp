@@ -64,6 +64,7 @@ export interface RegistrationVerification extends AuthenticationResponse {
 }
 
 let accessToken: string | null = null
+const sessionExpiredListeners = new Set<() => void>()
 
 export function getAccessToken(): string | null {
   return accessToken
@@ -75,6 +76,16 @@ export function setAccessToken(value: string | null): void {
 
 export function clearAccessToken(): void {
   accessToken = null
+}
+
+export function expireSession(): void {
+  clearAccessToken()
+  for (const listener of sessionExpiredListeners) listener()
+}
+
+export function onSessionExpired(listener: () => void): () => void {
+  sessionExpiredListeners.add(listener)
+  return () => sessionExpiredListeners.delete(listener)
 }
 
 async function authFetch<T>(path: string, body: unknown): Promise<T> {

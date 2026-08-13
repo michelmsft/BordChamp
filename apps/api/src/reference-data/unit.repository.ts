@@ -36,6 +36,7 @@ export interface UnitRepository {
   listActive(): Promise<readonly Unit[]>;
   listAll(): Promise<readonly Unit[]>;
   upsert(input: UpsertUnitInput): Promise<Unit>;
+  delete(code: string): Promise<void>;
 }
 
 interface UnitEntity extends TableEntity {
@@ -101,6 +102,10 @@ export class InMemoryUnitRepository implements UnitRepository {
     this.store.set(unit.code, unit);
     return unit;
   }
+
+  async delete(code: string): Promise<void> {
+    this.store.delete(code);
+  }
 }
 
 export class AzureTableUnitRepository implements UnitRepository {
@@ -123,6 +128,10 @@ export class AzureTableUnitRepository implements UnitRepository {
     const entity = toEntity(input);
     await this.client.upsertEntity(entity, "Replace");
     return fromEntity(entity);
+  }
+
+  async delete(code: string): Promise<void> {
+    await this.client.deleteEntity(UNIT_PARTITION, code);
   }
 }
 

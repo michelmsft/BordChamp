@@ -54,8 +54,6 @@ const CATALOG: Record<string, LucideIcon> = {
   'building-2': Building2,
 }
 
-export const COMMODITY_ICON_NAMES: readonly string[] = Object.keys(CATALOG)
-
 export function CommodityIcon({ name, code, size = 18 }: { name?: string; code?: string; size?: number }) {
   const Icon = name ? CATALOG[name] : undefined
   if (Icon) return <span className="commodity-symbol" aria-hidden="true"><Icon size={size} strokeWidth={1.75} /></span>
