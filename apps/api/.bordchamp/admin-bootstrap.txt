@@ -1,0 +1,23 @@
+
+===================== BordChamp admin seeded =====================
+  Email:         admin@bordchamps.com
+  Password:      Qwerty$1
+  Display name:  Admin System
+  User ID:       748823be-c9a8-4916-9792-5297d71a35ea
+  Organization:  BordChamp Exchange (id=a3773fa4-66fd-4218-8490-08cf89485031)
+  Persona:       ExchangeAdmin
+  ----- MFA enrollment (scan in your authenticator app) -----
+  otpauth URI:   otpauth://totp/BordChamp:BordChamp%3Aadmin%40bordchamps.com?issuer=BordChamp&secret=OBTNX7LKQAJBABRYTIPYSR2FJNTRM6CO&algorithm=SHA1&digits=6&period=30
+  Base32 secret: OBTNX7LKQAJBABRYTIPYSR2FJNTRM6CO
+  ----- Recovery codes (store safely) -----
+    - K2M2Q-
+    - K3PA4-
+    - NWKAV-
+    - QZEWE-
+    - SKHAT-
+    - K8CS9-
+    - 3ZA3E-
+    - T2CFG-
+    - USB2T-
+    - 5YB2S-
+==================================================================

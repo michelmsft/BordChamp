@@ -1,0 +1,6 @@
+import{Controller,Get,Inject,Param,Query,Req}from"@nestjs/common";import type{Request}from"express";import{Public}from"../identity/public-route.js";import{RequestActorService}from"../identity/request-actor.service.js";import{ReadModelsService}from"./read-models.service.js";
+@Controller("v1")export class ReadModelsController{constructor(@Inject(RequestActorService)private actors:RequestActorService,@Inject(ReadModelsService)private reads:ReadModelsService){}
+@Get("erp/organizations/:organizationId/workspace")async workspace(@Req()q:Request,@Param("organizationId")o:string){return{data:await this.reads.erpWorkspace(await this.actors.fromRequest(q),o)};}
+@Get("reports/organizations/:organizationId/summary")async summary(@Req()q:Request,@Param("organizationId")o:string){return{data:await this.reads.organizationSummary(await this.actors.fromRequest(q),o)};}
+@Public()@Get("public/reports/market-summary")async publicSummary(){return{data:await this.reads.publicMarketSummary()};}
+@Get("audit/events")async audit(@Req()q:Request,@Query("organizationId")o:string|undefined,@Query("limit")l:string|undefined){return{data:await this.reads.audit(await this.actors.fromRequest(q),o,l===undefined?100:Number(l))};}}

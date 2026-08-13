@@ -1,0 +1,36 @@
+{
+  "name": "@bordchamp/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx watch src/main.ts",
+    "storage:bootstrap": "tsx src/storage/bootstrap.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@azure/data-tables": "^13.3.1",
+    "@azure/identity": "^4.11.1",
+    "@bordchamp/authz": "workspace:*",
+    "@bordchamp/domain": "workspace:*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-express": "^11.1.6",
+    "argon2": "^0.45.1",
+    "express": "^5.1.0",
+    "jose": "^6.2.8",
+    "otpauth": "^9.5.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^11.1.6",
+    "@types/express": "^5.0.3",
+    "@types/supertest": "^6.0.3",
+    "supertest": "^7.1.4",
+    "tsx": "^4.20.3"
+  }
+}

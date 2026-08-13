@@ -1,0 +1,19 @@
+
+===================== BordChamp admin MFA rotated =====================
+  Email:         admin@bordchamps.com
+  User ID:       8650cee6-ef7e-4a4c-a6f6-9f5ff045d179
+  ----- MFA enrollment (scan in your authenticator app) -----
+  otpauth URI:   otpauth://totp/BordChamp:BordChamp%3Aadmin%40bordchamps.com?issuer=BordChamp&secret=5NVQAUMXUY67LHKJQZFGXPQA6YUAVZI7&algorithm=SHA1&digits=6&period=30
+  Base32 secret: 5NVQAUMXUY67LHKJQZFGXPQA6YUAVZI7
+  ----- Recovery codes (NOT yet stored - saveRecoveryCodes skipped) -----
+    - EKE8N-
+    - RS9X2-
+    - Q2LAH-
+    - 8TJPN-
+    - GWQ6Z-
+    - FXA95-
+    - FDH8N-
+    - F3ZL2-
+    - GBDUG-
+    - BNX93-
+========================================================================
