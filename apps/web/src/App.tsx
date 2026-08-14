@@ -15,6 +15,7 @@ import { ErpWorkspace } from './erp'
 import { OperationsWorkspace } from './operations'
 import { SettingsWorkspace } from './settings'
 import { useSession } from './session'
+import { useLanguage, useT } from './i18n'
 
 type View = 'overview' | 'erp' | 'operations' | 'market' | 'activity' | 'settings'
 
@@ -24,6 +25,7 @@ function App() {
 
 function AuthenticatedApp({ identity }: { identity: Identity }) {
   const { session } = useSession()
+  const t = useT()
   const [view, setView] = useState<View>('overview')
   const [market, setMarket] = useState<MarketSummary | null>(null)
   const [commodities, setCommodities] = useState<Commodity[]>([])
@@ -79,12 +81,12 @@ function AuthenticatedApp({ identity }: { identity: Identity }) {
           <span className="brand-mark">BC</span>
           <span><strong>BordChamp</strong><small>Marché agricole</small></span>
         </a>
-        <nav aria-label="Navigation principale">
-          <NavButton active={view === 'overview'} label="Vue d'ensemble" symbol="⌂" onClick={() => setView('overview')} />
-          <NavButton active={view === 'erp'} label="Gestion ERP" symbol="▦" onClick={() => setView('erp')} />
-          <NavButton active={view === 'market'} label="Marché" symbol="↗" onClick={() => setView('market')} />
-          <NavButton active={view === 'activity'} label="Activité" symbol="≡" onClick={() => setView('activity')} />
-          {identity.persona === 'ExchangeAdmin' && <NavButton active={view === 'settings'} label="Paramètres" symbol="⚙" onClick={() => setView('settings')} />}
+        <nav aria-label={t('view.overview')}>
+          <NavButton active={view === 'overview'} label={t('view.overview')} symbol="⌂" onClick={() => setView('overview')} />
+          <NavButton active={view === 'erp'} label={t('view.erp')} symbol="▦" onClick={() => setView('erp')} />
+          <NavButton active={view === 'market'} label={t('view.market')} symbol="↗" onClick={() => setView('market')} />
+          <NavButton active={view === 'activity'} label={t('view.activity')} symbol="≡" onClick={() => setView('activity')} />
+          {identity.persona === 'ExchangeAdmin' && <NavButton active={view === 'settings'} label={t('view.settings')} symbol="⚙" onClick={() => setView('settings')} />}
         </nav>
         <div className="sidebar-section">
           <span className="eyebrow">Opérations</span>
@@ -101,12 +103,13 @@ function AuthenticatedApp({ identity }: { identity: Identity }) {
 
       <main id="top">
         <header className="topbar">
-          <div><span className="eyebrow">Espace de négociation</span><h1>{viewTitle(view)}</h1></div>
+          <div><span className="eyebrow">{t('shell.eyebrow')}</span><h1>{t(`view.${view}`)}</h1></div>
           <div className="top-actions">
-            <span className={`api-state ${error ? 'is-offline' : ''}`}><i /> {error ? 'API indisponible' : 'Marché en direct'}</span>
-            <button className="icon-button" type="button" title="Actualiser" onClick={() => setRefreshKey((key) => key + 1)}>↻</button>
+            <span className={`api-state ${error ? 'is-offline' : ''}`}><i /> {error ? t('shell.status.offline') : t('shell.status.live')}</span>
+            <LanguageSwitch />
+            <button className="icon-button" type="button" title={t('shell.refresh')} onClick={() => setRefreshKey((key) => key + 1)}>↻</button>
             <button className="top-identity" type="button" title="Compte et organisation" onClick={() => setShowAccount(true)}>{initials(personaLabel(identity.persona))}</button>
-            <button className="primary-button" type="button" onClick={() => setShowRfq(true)}><span>＋</span> Nouvelle offre</button>
+            <button className="primary-button" type="button" onClick={() => setShowRfq(true)}><span>＋</span> {t('shell.newOffer')}</button>
           </div>
         </header>
 
@@ -218,7 +221,14 @@ function displayNameOf(profile: { displayName?: string; givenName?: string; surn
   if (combined) return combined
   return profile.email
 }
-function viewTitle(view: View) { return view === 'overview' ? "Vue d'ensemble" : view === 'erp' ? 'Gestion ERP' : view === 'operations' ? 'Console avancée' : view === 'market' ? 'Marché' : view === 'settings' ? 'Paramètres' : 'Activité' }
+function LanguageSwitch() {
+  const { language, setLanguage } = useLanguage()
+  const t = useT()
+  return <div className="lang-switch" role="group" aria-label={t('shell.lang.switch')}>
+    <button type="button" className={language === 'fr' ? 'is-active' : ''} aria-pressed={language === 'fr'} onClick={() => setLanguage('fr')}>{t('shell.lang.fr')}</button>
+    <button type="button" className={language === 'en' ? 'is-active' : ''} aria-pressed={language === 'en'} onClick={() => setLanguage('en')}>{t('shell.lang.en')}</button>
+  </div>
+}
 function total(values?: Record<string, number>) { return Object.values(values ?? {}).reduce((sum, value) => sum + value, 0) }
 function activeCount(values?: Record<string, number>) { return Object.entries(values ?? {}).filter(([key]) => !['completed', 'resolved', 'released', 'cancelled'].includes(key)).reduce((sum, [, value]) => sum + value, 0) }
 function statusDetail(values: Record<string, number>) { const entry = Object.entries(values).sort((left, right) => right[1] - left[1])[0]; return entry ? `${entry[1]} ${entry[0]}` : 'Aucun lot' }

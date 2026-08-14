@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { FormEvent } from 'react'
 
 import {
   api,
@@ -20,6 +20,9 @@ import {
 } from './api'
 import { CommodityVisual, ProductImage } from './product-image'
 import { PRODUCT_IMAGE_GROUPS, type ProductImageGroupId } from './product-images'
+import { Drawer } from './drawer'
+import { useToast } from './toast'
+import { useT } from './i18n'
 
 type Tab = 'units' | 'commodities' | 'schemes'
 
@@ -55,12 +58,53 @@ export function SettingsWorkspace({ identity }: { identity: Identity }) {
 function UnitsTab({ identity, refreshKey, onChanged }: { identity: Identity; refreshKey: number; onChanged: () => void }) {
   const { data, loading, error, reload } = useAdminList<Unit>('/v1/admin/reference-data/units', identity, refreshKey)
   const [edit, setEdit] = useState<Unit | null>(null)
+  const [duplicate, setDuplicate] = useState<Unit | null>(null)
   const [creating, setCreating] = useState(false)
+  const [openMenuCode, setOpenMenuCode] = useState<string | null>(null)
+  const { push } = useToast()
+  const t = useT()
+  const closeAll = () => { setEdit(null); setDuplicate(null); setCreating(false) }
+
+  const restoreUnit = useCallback(async (unit: Unit) => {
+    try {
+      await api(`/v1/admin/reference-data/units/${encodeURIComponent(unit.code)}`, identity, {
+        method: 'PUT',
+        body: JSON.stringify({
+          labelEn: unit.label.en, labelFr: unit.label.fr, dimension: unit.dimension,
+          ...(unit.baseUnitCode ? { baseUnitCode: unit.baseUnitCode } : {}),
+          ...(unit.factorToBase !== undefined ? { factorToBase: unit.factorToBase } : {}),
+          scale: unit.scale, status: unit.status,
+        }),
+      })
+      onChanged()
+      push({ tone: 'success', title: t('units.toast.restored'), detail: unit.code })
+    } catch (cause) {
+      push({ tone: 'danger', title: t('units.toast.restoreFailed'), detail: readError(cause) })
+    }
+  }, [identity, onChanged, push, t])
+
+  const deleteUnitWithUndo = useCallback(async (unit: Unit) => {
+    try {
+      await api<void>(`/v1/admin/reference-data/units/${encodeURIComponent(unit.code)}`, identity, { method: 'DELETE' })
+      onChanged()
+      push({
+        tone: 'success', title: t('units.toast.deleted'), detail: t('units.toast.deletedDetail', { code: unit.code }),
+        action: { label: t('units.toast.undo'), onAct: () => restoreUnit(unit) },
+        timeoutMs: 8000,
+      })
+    } catch (cause) {
+      push({ tone: 'danger', title: readError(cause) })
+    }
+  }, [identity, onChanged, push, restoreUnit, t])
+
   return <>
-    <SettingsHeader title="Unités de mesure" subtitle={`${data?.length ?? 0} unité(s) au catalogue`} onCreate={() => setCreating(true)} onRefresh={reload} createLabel="Nouvelle unité" />
+    <SettingsHeader title="Unités de mesure" subtitle={`${data?.length ?? 0} unité(s) au catalogue`} onCreate={() => setCreating(true)} onRefresh={reload} createLabel={t('units.new')} />
     {error && <div className="error-strip">{error}</div>}
-    {loading && !data ? <div className="erp-loading"><i /><i /><i /></div> : <div className="table-wrap"><table><thead><tr><th>Code</th><th>Libellé</th><th>Dimension</th><th>Base</th><th>Facteur</th><th>Décimales</th><th>État</th><th></th></tr></thead><tbody>{(data ?? []).map((unit) => <tr key={unit.code} onClick={() => setEdit(unit)} style={{ cursor: 'pointer' }}><td><strong>{unit.code}</strong><small>{unit.label.en}</small></td><td>{unit.label.fr}</td><td>{dimensionLabel(unit.dimension)}</td><td>{unit.baseUnitCode ?? '—'}</td><td>{unit.factorToBase ?? '—'}</td><td>{unit.scale}</td><td><span className={`status-pill ${unit.status === 'active' ? 'is-live' : ''}`}>{statusLabel(unit.status)}</span></td><td>→</td></tr>)}</tbody></table></div>}
-    {(edit || creating) && <UnitDialog identity={identity} unit={edit ?? undefined} onClose={() => { setEdit(null); setCreating(false) }} onSaved={() => { setEdit(null); setCreating(false); onChanged() }} />}
+    {loading && !data ? <div className="erp-loading"><i /><i /><i /></div> : <div className="table-wrap"><table><thead><tr><th>Code</th><th>Libellé</th><th>Dimension</th><th>Base</th><th>Facteur</th><th>Décimales</th><th>État</th><th aria-label={t('units.row.actions')}></th></tr></thead><tbody>{(data ?? []).map((unit) => <tr key={unit.code} onClick={() => setEdit(unit)} style={{ cursor: 'pointer' }}><td><strong>{unit.code}</strong><small>{unit.label.en}</small></td><td>{unit.label.fr}</td><td>{dimensionLabel(unit.dimension)}</td><td>{unit.baseUnitCode ?? '—'}</td><td>{unit.factorToBase ?? '—'}</td><td>{unit.scale}</td><td><span className={`status-pill ${unit.status === 'active' ? 'is-live' : ''}`}>{statusLabel(unit.status)}</span></td><td><RowMenu open={openMenuCode === unit.code} onToggle={(next) => setOpenMenuCode(next ? unit.code : null)} label={t('units.row.actions')} items={[
+      { label: t('units.row.duplicate'), onSelect: () => { setDuplicate(unit); setOpenMenuCode(null) } },
+      { label: t('units.row.delete'), tone: 'danger', onSelect: () => { setOpenMenuCode(null); void deleteUnitWithUndo(unit) } },
+    ]} /></td></tr>)}</tbody></table></div>}
+    {(edit || duplicate || creating) && <UnitDialog identity={identity} unit={edit ?? duplicate ?? undefined} duplicate={duplicate !== null} onClose={closeAll} onSaved={() => { closeAll(); onChanged() }} onDelete={edit ? () => { void deleteUnitWithUndo(edit); closeAll() } : undefined} />}
   </>
 }
 
@@ -68,12 +112,58 @@ function CommoditiesTab({ identity, refreshKey, onChanged }: { identity: Identit
   const { data, loading, error, reload } = useAdminList<AdminCommodity>('/v1/admin/reference-data/commodities', identity, refreshKey)
   const { data: units } = useAdminList<Unit>('/v1/admin/reference-data/units', identity, refreshKey)
   const [edit, setEdit] = useState<AdminCommodity | null>(null)
+  const [duplicate, setDuplicate] = useState<AdminCommodity | null>(null)
   const [creating, setCreating] = useState(false)
+  const [openMenuCode, setOpenMenuCode] = useState<string | null>(null)
+  const { push } = useToast()
+  const t = useT()
+  const closeAll = () => { setEdit(null); setDuplicate(null); setCreating(false) }
+
+  const applyStatus = useCallback(async (commodity: AdminCommodity, nextStatus: CommodityStatus) => {
+    await api(`/v1/admin/reference-data/commodities/${encodeURIComponent(commodity.code)}`, identity, {
+      method: 'PUT',
+      body: JSON.stringify({
+        category: commodity.category, nameEn: commodity.name.en, nameFr: commodity.name.fr,
+        ...(commodity.iconName ? { iconName: commodity.iconName } : {}),
+        ...(commodity.imageName ? { imageName: commodity.imageName } : {}),
+        ...(commodity.defaultUnitCode ? { defaultUnitCode: commodity.defaultUnitCode } : {}),
+        allowedUnitCodes: commodity.allowedUnitCodes, isPublic: commodity.isPublic, status: nextStatus,
+      }),
+    })
+  }, [identity])
+
+  const toggleStatusWithUndo = useCallback(async (commodity: AdminCommodity, nextStatus: CommodityStatus) => {
+    try {
+      await applyStatus(commodity, nextStatus)
+      onChanged()
+      const titleKey = nextStatus === 'active' ? 'commodities.toast.reactivated' : 'commodities.toast.suspended'
+      const detailKey = nextStatus === 'active' ? 'commodities.toast.reactivatedDetail' : 'commodities.toast.suspendedDetail'
+      push({
+        tone: 'success', title: t(titleKey), detail: t(detailKey, { code: commodity.code }),
+        action: {
+          label: t('units.toast.undo'),
+          onAct: async () => {
+            try { await applyStatus(commodity, commodity.status); onChanged() }
+            catch (cause) { push({ tone: 'danger', title: t('commodities.toast.updateFailed'), detail: readError(cause) }) }
+          },
+        },
+        timeoutMs: 8000,
+      })
+    } catch (cause) {
+      push({ tone: 'danger', title: t('commodities.toast.updateFailed'), detail: readError(cause) })
+    }
+  }, [applyStatus, onChanged, push, t])
+
   return <>
-    <SettingsHeader title="Produits" subtitle={`${data?.length ?? 0} produit(s) au catalogue`} onCreate={() => setCreating(true)} onRefresh={reload} createLabel="Nouveau produit" />
+    <SettingsHeader title="Produits" subtitle={`${data?.length ?? 0} produit(s) au catalogue`} onCreate={() => setCreating(true)} onRefresh={reload} createLabel={t('commodities.new')} />
     {error && <div className="error-strip">{error}</div>}
-    {loading && !data ? <div className="erp-loading"><i /><i /><i /></div> : <div className="table-wrap"><table><thead><tr><th>Produit</th><th>Catégorie</th><th>Unité par défaut</th><th>Unités autorisées</th><th>Public</th><th>État</th><th></th></tr></thead><tbody>{(data ?? []).map((c) => <tr key={c.code} onClick={() => setEdit(c)} style={{ cursor: 'pointer' }}><td><CommodityVisual imageName={c.imageName} iconName={c.iconName} code={c.code} /><strong>{c.name.fr}</strong><small>{c.code}</small></td><td>{categoryLabel(c.category)}</td><td>{c.defaultUnitCode ?? '—'}</td><td>{c.allowedUnitCodes.join(', ') || '—'}</td><td>{c.isPublic ? '✓' : '—'}</td><td><span className={`status-pill ${c.status === 'active' ? 'is-live' : ''}`}>{statusLabel(c.status)}</span></td><td>→</td></tr>)}</tbody></table></div>}
-    {(edit || creating) && <CommodityDialog identity={identity} commodity={edit ?? undefined} units={units ?? []} onClose={() => { setEdit(null); setCreating(false) }} onSaved={() => { setEdit(null); setCreating(false); onChanged() }} />}
+    {loading && !data ? <div className="erp-loading"><i /><i /><i /></div> : <div className="table-wrap"><table><thead><tr><th>Produit</th><th>Catégorie</th><th>Unité par défaut</th><th>Unités autorisées</th><th>Public</th><th>État</th><th aria-label={t('commodities.row.actions')}></th></tr></thead><tbody>{(data ?? []).map((c) => <tr key={c.code} onClick={() => setEdit(c)} style={{ cursor: 'pointer' }}><td><CommodityVisual imageName={c.imageName} iconName={c.iconName} code={c.code} /><strong>{c.name.fr}</strong><small>{c.code}</small></td><td>{categoryLabel(c.category)}</td><td>{c.defaultUnitCode ?? '—'}</td><td>{c.allowedUnitCodes.join(', ') || '—'}</td><td>{c.isPublic ? '✓' : '—'}</td><td><span className={`status-pill ${c.status === 'active' ? 'is-live' : ''}`}>{statusLabel(c.status)}</span></td><td><RowMenu open={openMenuCode === c.code} onToggle={(next) => setOpenMenuCode(next ? c.code : null)} label={t('commodities.row.actions')} items={[
+      { label: t('commodities.row.duplicate'), onSelect: () => { setDuplicate(c); setOpenMenuCode(null) } },
+      c.status === 'active'
+        ? { label: t('commodities.row.suspend'), tone: 'danger', onSelect: () => { setOpenMenuCode(null); void toggleStatusWithUndo(c, 'suspended') } }
+        : { label: t('commodities.row.reactivate'), onSelect: () => { setOpenMenuCode(null); void toggleStatusWithUndo(c, 'active') } },
+    ]} /></td></tr>)}</tbody></table></div>}
+    {(edit || duplicate || creating) && <CommodityDialog identity={identity} commodity={edit ?? duplicate ?? undefined} duplicate={duplicate !== null} units={units ?? []} onClose={closeAll} onSaved={() => { closeAll(); onChanged() }} />}
   </>
 }
 
@@ -84,11 +174,57 @@ function SchemesTab({ identity, refreshKey, onChanged }: { identity: Identity; r
   const [edit, setEdit] = useState<InspectionScheme | null>(null)
   const [duplicate, setDuplicate] = useState<InspectionScheme | null>(null)
   const [creating, setCreating] = useState(false)
+  const [openMenuKey, setOpenMenuKey] = useState<string | null>(null)
+  const { push } = useToast()
+  const t = useT()
   const closeDialog = () => { setEdit(null); setDuplicate(null); setCreating(false) }
+
+  const applySchemeStatus = useCallback(async (scheme: InspectionScheme, nextStatus: SchemeStatus) => {
+    await api(`/v1/admin/reference-data/inspection-schemes/${encodeURIComponent(scheme.commodityCode)}/${encodeURIComponent(scheme.type)}`, identity, {
+      method: 'PUT',
+      body: JSON.stringify({
+        labelEn: scheme.label.en, labelFr: scheme.label.fr,
+        ...(scheme.samplingHint ? { samplingHint: scheme.samplingHint } : {}),
+        metrics: scheme.metrics, grades: scheme.grades, status: nextStatus,
+      }),
+    })
+  }, [identity])
+
+  const toggleSchemeStatusWithUndo = useCallback(async (scheme: InspectionScheme, nextStatus: SchemeStatus) => {
+    try {
+      await applySchemeStatus(scheme, nextStatus)
+      onChanged()
+      const titleKey = nextStatus === 'active' ? 'schemes.toast.reactivated' : 'schemes.toast.suspended'
+      const detailKey = nextStatus === 'active' ? 'schemes.toast.reactivatedDetail' : 'schemes.toast.suspendedDetail'
+      push({
+        tone: 'success', title: t(titleKey), detail: t(detailKey, { label: scheme.label.fr }),
+        action: {
+          label: t('units.toast.undo'),
+          onAct: async () => {
+            try { await applySchemeStatus(scheme, scheme.status); onChanged() }
+            catch (cause) { push({ tone: 'danger', title: t('schemes.toast.updateFailed'), detail: readError(cause) }) }
+          },
+        },
+        timeoutMs: 8000,
+      })
+    } catch (cause) {
+      push({ tone: 'danger', title: t('schemes.toast.updateFailed'), detail: readError(cause) })
+    }
+  }, [applySchemeStatus, onChanged, push, t])
+
   return <>
-    <SettingsHeader title="Contrôles" subtitle={`${data?.length ?? 0} contrôle(s) définis`} onCreate={() => setCreating(true)} onRefresh={reload} createLabel="Nouveau contrôle" />
+    <SettingsHeader title="Contrôles" subtitle={`${data?.length ?? 0} contrôle(s) définis`} onCreate={() => setCreating(true)} onRefresh={reload} createLabel={t('schemes.new')} />
     {error && <div className="error-strip">{error}</div>}
-    {loading && !data ? <div className="erp-loading"><i /><i /><i /></div> : <div className="table-wrap"><table><thead><tr><th>Contrôle</th><th>Produit</th><th>Type</th><th>Métriques</th><th>Classes</th><th>Mis à jour</th><th>État</th><th></th></tr></thead><tbody>{(data ?? []).map((scheme) => { const commodity = (commodities ?? []).find((c) => c.code === scheme.commodityCode); return <tr key={`${scheme.commodityCode}:${scheme.type}`} onClick={() => setEdit(scheme)} style={{ cursor: 'pointer' }}><td><CommodityVisual imageName={commodity?.imageName} iconName={commodity?.iconName} code={scheme.commodityCode} /><strong>{scheme.label.fr}</strong><small>{commodity?.name.fr ?? scheme.commodityCode}</small></td><td>{scheme.commodityCode}</td><td>{inspectionTypeLabel(scheme.type)}</td><td>{scheme.metrics.length}</td><td>{scheme.grades.length}</td><td>{new Date(scheme.updatedAt).toLocaleDateString('fr-FR')}</td><td><span className={`status-pill ${scheme.status === 'active' ? 'is-live' : ''}`}>{statusLabel(scheme.status)}</span></td><td><div className="row-actions"><button type="button" className="icon-button" title={`Dupliquer ${scheme.label.fr}`} onClick={(event) => { event.stopPropagation(); setDuplicate(scheme) }}>⧉</button><span>→</span></div></td></tr> })}</tbody></table></div>}
+    {loading && !data ? <div className="erp-loading"><i /><i /><i /></div> : <div className="table-wrap"><table><thead><tr><th>Contrôle</th><th>Produit</th><th>Type</th><th>Métriques</th><th>Classes</th><th>Mis à jour</th><th>État</th><th aria-label={t('schemes.row.actions')}></th></tr></thead><tbody>{(data ?? []).map((scheme) => {
+      const key = `${scheme.commodityCode}:${scheme.type}`
+      const commodity = (commodities ?? []).find((c) => c.code === scheme.commodityCode)
+      return <tr key={key} onClick={() => setEdit(scheme)} style={{ cursor: 'pointer' }}><td><CommodityVisual imageName={commodity?.imageName} iconName={commodity?.iconName} code={scheme.commodityCode} /><strong>{scheme.label.fr}</strong><small>{commodity?.name.fr ?? scheme.commodityCode}</small></td><td>{scheme.commodityCode}</td><td>{inspectionTypeLabel(scheme.type)}</td><td>{scheme.metrics.length}</td><td>{scheme.grades.length}</td><td>{new Date(scheme.updatedAt).toLocaleDateString('fr-FR')}</td><td><span className={`status-pill ${scheme.status === 'active' ? 'is-live' : ''}`}>{statusLabel(scheme.status)}</span></td><td><RowMenu open={openMenuKey === key} onToggle={(next) => setOpenMenuKey(next ? key : null)} label={t('schemes.row.actions')} items={[
+        { label: t('schemes.row.duplicate'), onSelect: () => { setDuplicate(scheme); setOpenMenuKey(null) } },
+        scheme.status === 'active'
+          ? { label: t('schemes.row.suspend'), tone: 'danger', onSelect: () => { setOpenMenuKey(null); void toggleSchemeStatusWithUndo(scheme, 'suspended') } }
+          : { label: t('schemes.row.reactivate'), onSelect: () => { setOpenMenuKey(null); void toggleSchemeStatusWithUndo(scheme, 'active') } },
+      ]} /></td></tr>
+    })}</tbody></table></div>}
     {(edit || duplicate || creating) && <SchemeDialog identity={identity} scheme={edit ?? duplicate ?? undefined} duplicate={duplicate !== null} commodities={commodities ?? []} units={units ?? []} onClose={closeDialog} onSaved={() => { closeDialog(); onChanged() }} />}
   </>
 }
@@ -97,9 +233,11 @@ function SettingsHeader({ title, subtitle, onCreate, onRefresh, createLabel }: {
   return <header className="erp-heading"><div><span className="eyebrow">Paramètres</span><h2>{title}</h2><p>{subtitle}</p></div><div><button className="icon-button" type="button" title="Actualiser" onClick={onRefresh}>↻</button><button className="primary-button" type="button" onClick={onCreate}>＋ {createLabel}</button></div></header>
 }
 
-function UnitDialog({ identity, unit, onClose, onSaved }: { identity: Identity; unit?: Unit; onClose: () => void; onSaved: () => void }) {
+function UnitDialog({ identity, unit, duplicate = false, onClose, onSaved, onDelete }: { identity: Identity; unit?: Unit; duplicate?: boolean; onClose: () => void; onSaved: () => void; onDelete?: () => void }) {
+  const t = useT()
+  const isNew = unit === undefined || duplicate
   const [form, setForm] = useState({
-    code: unit?.code ?? '',
+    code: duplicate ? '' : unit?.code ?? '',
     labelEn: unit?.label.en ?? '',
     labelFr: unit?.label.fr ?? '',
     dimension: unit?.dimension ?? 'mass' as UnitDimension,
@@ -109,14 +247,13 @@ function UnitDialog({ identity, unit, onClose, onSaved }: { identity: Identity; 
     status: unit?.status ?? 'active' as UnitStatus,
   })
   const [busy, setBusy] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
   const [err, setErr] = useState('')
-  const isNew = unit === undefined
+  const title = duplicate ? t('units.duplicate') : isNew ? t('units.new') : `${t('units.edit')} · ${unit?.code}`
+
   async function submit(e: FormEvent) {
     e.preventDefault(); setErr('')
     if (form.baseUnitCode && form.baseUnitCode.toUpperCase() === form.code.toUpperCase()) {
-      setErr('Une unité ne peut pas être sa propre unité de base.')
+      setErr(t('units.selfBase'))
       return
     }
     setBusy(true)
@@ -133,32 +270,47 @@ function UnitDialog({ identity, unit, onClose, onSaved }: { identity: Identity; 
       onSaved()
     } catch (cause) { setErr(readError(cause)); setBusy(false) }
   }
-  async function deleteUnit() {
-    if (!unit) return
-    setDeleting(true); setErr('')
-    try {
-      await api<void>(`/v1/admin/reference-data/units/${encodeURIComponent(unit.code)}`, identity, { method: 'DELETE' })
-      onSaved()
-    } catch (cause) { setErr(readError(cause)); setDeleting(false); setConfirmDelete(false) }
-  }
-  return <Dialog title={isNew ? 'Nouvelle unité' : `Unité ${unit?.code}`} detail="Définissez le code, la dimension et l'échelle." onClose={onClose} onSubmit={submit}>
-    <label>Code<input required disabled={!isNew} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="KG" /></label>
-    <div className="settings-grid-2"><label>Libellé (fr)<input required value={form.labelFr} onChange={(e) => setForm({ ...form, labelFr: e.target.value })} /></label><label>Libellé (en)<input required value={form.labelEn} onChange={(e) => setForm({ ...form, labelEn: e.target.value })} /></label></div>
-    <div className="settings-grid-2"><label>Dimension<select value={form.dimension} onChange={(e) => setForm({ ...form, dimension: e.target.value as UnitDimension })}>{DIMENSIONS.map((d) => <option key={d} value={d}>{dimensionLabel(d)}</option>)}</select></label><label>État<select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as UnitStatus })}>{UNIT_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}</select></label></div>
-    <div className="settings-grid-2"><label>Unité de base<input value={form.baseUnitCode} onChange={(e) => setForm({ ...form, baseUnitCode: e.target.value.toUpperCase() })} placeholder="KG" /><small>Optionnel</small></label><label>Facteur vers base<input value={form.factorToBase} onChange={(e) => setForm({ ...form, factorToBase: e.target.value })} placeholder="0.001" inputMode="decimal" /><small>Optionnel</small></label></div>
-    <label>Décimales<input required type="number" min={0} value={form.scale} onChange={(e) => setForm({ ...form, scale: e.target.value })} /></label>
-    {!isNew && <div className="unit-delete-row">
-      {confirmDelete ? <><p>Supprimer définitivement l’unité <strong>{unit.code}</strong> ?</p><div><button type="button" className="secondary-button" onClick={() => setConfirmDelete(false)} disabled={deleting}>Conserver</button><button type="button" className="danger-button" onClick={deleteUnit} disabled={deleting}>{deleting ? 'Suppression…' : 'Confirmer la suppression'}</button></div></> : <><p>La suppression est impossible si cette unité est encore utilisée.</p><button type="button" className="danger-button" onClick={() => setConfirmDelete(true)}>Supprimer l’unité</button></>}
-    </div>}
+
+  const actions = <>
+    {onDelete && !duplicate && <button type="button" className="danger-button" onClick={onDelete} disabled={busy} style={{ marginRight: 'auto' }}>{t('units.delete.button')}</button>}
+    <button type="button" className="secondary-button" onClick={onClose} disabled={busy}>{t('common.cancel')}</button>
+    <button type="submit" className="primary-button" disabled={busy}>{busy ? t('common.saving') : isNew ? t('common.create') : t('common.save')}</button>
+  </>
+
+  return <Drawer title={title} detail={t('units.detail')} onClose={onClose} onSubmit={submit} actions={actions} closeLabel={t('common.close')}>
+    <label>{t('units.field.code')}<input required disabled={!isNew} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="KG" /></label>
+    <div className="settings-grid-2"><label>{t('units.field.labelFr')}<input required value={form.labelFr} onChange={(e) => setForm({ ...form, labelFr: e.target.value })} /></label><label>{t('units.field.labelEn')}<input required value={form.labelEn} onChange={(e) => setForm({ ...form, labelEn: e.target.value })} /></label></div>
+    <div className="settings-grid-2"><label>{t('units.field.dimension')}<select value={form.dimension} onChange={(e) => setForm({ ...form, dimension: e.target.value as UnitDimension })}>{DIMENSIONS.map((d) => <option key={d} value={d}>{dimensionLabel(d)}</option>)}</select></label><label>{t('units.field.status')}<select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as UnitStatus })}>{UNIT_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}</select></label></div>
+    <div className="settings-grid-2"><label>{t('units.field.baseUnit')}<input value={form.baseUnitCode} onChange={(e) => setForm({ ...form, baseUnitCode: e.target.value.toUpperCase() })} placeholder="KG" /><small>{t('units.field.optional')}</small></label><label>{t('units.field.factor')}<input value={form.factorToBase} onChange={(e) => setForm({ ...form, factorToBase: e.target.value })} placeholder="0.001" inputMode="decimal" /><small>{t('units.field.optional')}</small></label></div>
+    <label>{t('units.field.scale')}<input required type="number" min={0} value={form.scale} onChange={(e) => setForm({ ...form, scale: e.target.value })} /></label>
     {err && <div className="form-error" role="alert">{err}</div>}
-    <DialogActions busy={busy || deleting} onCancel={onClose} label={isNew ? 'Créer' : 'Enregistrer'} />
-  </Dialog>
+  </Drawer>
 }
 
-function CommodityDialog({ identity, commodity, units, onClose, onSaved }: { identity: Identity; commodity?: AdminCommodity; units: readonly Unit[]; onClose: () => void; onSaved: () => void }) {
+interface RowMenuItem { label: string; onSelect: () => void; tone?: 'danger' }
+function RowMenu({ open, onToggle, items, label }: { open: boolean; onToggle: (next: boolean) => void; items: readonly RowMenuItem[]; label: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    function onDoc(event: MouseEvent) { if (!ref.current?.contains(event.target as Node)) onToggle(false) }
+    function onKey(event: KeyboardEvent) { if (event.key === 'Escape') onToggle(false) }
+    document.addEventListener('mousedown', onDoc)
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey) }
+  }, [open, onToggle])
+  return <div ref={ref} className="row-menu" onClick={(event) => event.stopPropagation()}>
+    <button type="button" className="icon-button" aria-haspopup="menu" aria-expanded={open} aria-label={label} onClick={(event) => { event.stopPropagation(); onToggle(!open) }}>⋯</button>
+    {open && <div className="row-menu-panel" role="menu">
+      {items.map((item) => <button key={item.label} type="button" role="menuitem" className={item.tone === 'danger' ? 'is-danger' : ''} onClick={(event) => { event.stopPropagation(); item.onSelect() }}>{item.label}</button>)}
+    </div>}
+  </div>
+}
+
+function CommodityDialog({ identity, commodity, duplicate = false, units, onClose, onSaved }: { identity: Identity; commodity?: AdminCommodity; duplicate?: boolean; units: readonly Unit[]; onClose: () => void; onSaved: () => void }) {
+  const t = useT()
   const [imageLibraryOpen, setImageLibraryOpen] = useState(false)
   const [form, setForm] = useState({
-    code: commodity?.code ?? '',
+    code: duplicate ? '' : commodity?.code ?? '',
     nameFr: commodity?.name.fr ?? '',
     nameEn: commodity?.name.en ?? '',
     category: commodity?.category ?? 'crop' as CommodityCategory,
@@ -171,7 +323,8 @@ function CommodityDialog({ identity, commodity, units, onClose, onSaved }: { ide
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [imageGroup, setImageGroup] = useState<ProductImageGroupId>(() => imageGroupForCategory(commodity?.category ?? 'crop'))
-  const isNew = commodity === undefined
+  const isNew = commodity === undefined || duplicate
+  const title = duplicate ? t('commodities.duplicate') : isNew ? t('commodities.new') : t('commodities.edit')
   function toggleAllowedUnit(code: string) {
     const set = new Set(form.allowedUnitCodes)
     if (set.has(code)) set.delete(code); else set.add(code)
@@ -201,7 +354,11 @@ function CommodityDialog({ identity, commodity, units, onClose, onSaved }: { ide
   }
   const visibleImages = PRODUCT_IMAGE_GROUPS.find((group) => group.id === imageGroup)?.images ?? []
   const activeUnits = units.filter((unit) => unit.status === 'active')
-  return <Dialog title={isNew ? 'Créer un produit' : 'Modifier le produit'} detail="Configurez l'identité, la classification et les unités du produit." onClose={onClose} onSubmit={submit} wide className="product-editor-dialog">
+  const actions = <>
+    <button type="button" className="secondary-button" onClick={onClose} disabled={busy}>{t('common.cancel')}</button>
+    <button type="submit" className="primary-button" disabled={busy}>{busy ? t('common.saving') : isNew ? t('commodities.create') : t('commodities.save')}</button>
+  </>
+  return <Drawer title={title} detail={t('commodities.detail')} onClose={onClose} onSubmit={submit} actions={actions} closeLabel={t('common.close')} size="lg">
     <div className="product-editor-top">
       <section className="product-editor-section product-visual-section">
         <SectionTitle symbol="▧" title="Image du produit" />
@@ -243,8 +400,7 @@ function CommodityDialog({ identity, commodity, units, onClose, onSaved }: { ide
       </div>
     </section>
     {err && <div className="form-error" role="alert">{err}</div>}
-    <DialogActions busy={busy} onCancel={onClose} label={isNew ? 'Créer le produit' : 'Enregistrer le produit'} />
-  </Dialog>
+  </Drawer>
 }
 
 function SectionTitle({ symbol, title, detail }: { symbol: string; title: string; detail?: string }) {
@@ -252,6 +408,7 @@ function SectionTitle({ symbol, title, detail }: { symbol: string; title: string
 }
 
 function SchemeDialog({ identity, scheme, duplicate = false, commodities, units, onClose, onSaved }: { identity: Identity; scheme?: InspectionScheme; duplicate?: boolean; commodities: readonly AdminCommodity[]; units: readonly Unit[]; onClose: () => void; onSaved: () => void }) {
+  const t = useT()
   const [editorTab, setEditorTab] = useState<'information' | 'metrics' | 'grades'>('information')
   const [form, setForm] = useState({
     commodityCode: scheme?.commodityCode ?? commodities[0]?.code ?? '',
@@ -303,7 +460,18 @@ function SchemeDialog({ identity, scheme, duplicate = false, commodities, units,
     } catch (cause) { setErr(readError(cause)); setBusy(false) }
   }
 
-  return <Dialog title={duplicate ? `Dupliquer ${scheme?.label.fr}` : isNew ? 'Nouveau contrôle' : `Contrôle ${scheme?.label.fr}`} detail={duplicate ? "Choisissez une nouvelle combinaison produit/type pour créer la copie." : "Définissez les critères d'inspection et les classes de qualité."} onClose={onClose} onSubmit={submit} wide className="scheme-dialog">
+  return <Drawer
+    title={duplicate ? t('schemes.duplicate') : isNew ? t('schemes.new') : `${t('schemes.edit')} · ${scheme?.label.fr}`}
+    detail={duplicate ? t('schemes.duplicate.detail') : t('schemes.detail')}
+    onClose={onClose}
+    onSubmit={submit}
+    closeLabel={t('common.close')}
+    size="xl"
+    actions={<>
+      <button type="button" className="secondary-button" onClick={onClose} disabled={busy}>{t('common.cancel')}</button>
+      <button type="submit" className="primary-button" disabled={busy}>{busy ? t('common.saving') : duplicate ? t('schemes.createCopy') : isNew ? t('schemes.create') : t('schemes.save')}</button>
+    </>}
+  >
     <div className="scheme-editor-tabs" role="tablist" aria-label="Configuration du contrôle">
       <button type="button" role="tab" aria-selected={editorTab === 'information'} aria-controls="scheme-information-panel" className={editorTab === 'information' ? 'is-selected' : ''} onClick={() => setEditorTab('information')}>Informations</button>
       <button type="button" role="tab" aria-selected={editorTab === 'metrics'} aria-controls="scheme-metrics-panel" className={editorTab === 'metrics' ? 'is-selected' : ''} onClick={() => setEditorTab('metrics')}>Métriques <span>{metrics.length}</span></button>
@@ -360,21 +528,7 @@ function SchemeDialog({ identity, scheme, duplicate = false, commodities, units,
     </div>}
 
     {err && <div className="form-error" role="alert">{err}</div>}
-    <DialogActions busy={busy} onCancel={onClose} label={duplicate ? 'Créer la copie' : isNew ? 'Créer' : 'Enregistrer'} />
-  </Dialog>
-}
-
-function Dialog({ title, detail, onClose, onSubmit, children, wide = false, className = '' }: { title: string; detail: string; onClose: () => void; onSubmit: (event: FormEvent) => void; children: ReactNode; wide?: boolean; className?: string }) {
-  return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-    <section className={`dialog ${wide ? 'is-wide' : ''} ${className}`} role="dialog" aria-modal="true" aria-labelledby="settings-dialog-title">
-      <header className="dialog-heading"><div><h2 id="settings-dialog-title">{title}</h2><p>{detail}</p></div><button className="icon-button" type="button" title="Fermer" onClick={onClose}>×</button></header>
-      <form onSubmit={onSubmit}>{children}</form>
-    </section>
-  </div>
-}
-
-function DialogActions({ busy, onCancel, label }: { busy: boolean; onCancel: () => void; label: string }) {
-  return <div className="dialog-actions"><button className="secondary-button" type="button" onClick={onCancel}>Annuler</button><button className="primary-button" type="submit" disabled={busy}>{busy ? 'Enregistrement…' : label}</button></div>
+  </Drawer>
 }
 
 function useAdminList<T>(path: string, identity: Identity, refreshKey: number) {
