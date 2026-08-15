@@ -76,6 +76,19 @@ importers:
         specifier: ^4.20.3
         version: 4.23.8
 
+  apps/swa-api:
+    dependencies:
+      '@azure/functions':
+        specifier: ^4.7.2
+        version: 4.16.2
+    devDependencies:
+      '@types/node':
+        specifier: ^24.2.1
+        version: 24.13.3
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+
   apps/web:
     dependencies:
       lucide-react:
@@ -161,6 +174,14 @@ packages:
   '@azure/data-tables@13.3.2':
     resolution: {integrity: sha1-M1EoyTt8c7+b//PbKRF+x3i0oS0=, tarball: https://ms-feed-17.pkgs.visualstudio.com/1es-public/_packaging/npm-public/npm/registry/@azure/data-tables/-/data-tables-13.3.2.tgz}
     engines: {node: '>=20.0.0'}
+
+  '@azure/functions-extensions-base@0.3.0':
+    resolution: {integrity: sha1-cGLy8GmLtkdwN4+eev+fd8Ukn04=, tarball: https://ms-feed-2.pkgs.visualstudio.com/1es-public/_packaging/npm-public/npm/registry/@azure/functions-extensions-base/-/functions-extensions-base-0.3.0.tgz}
+    engines: {node: '>=18.0'}
+
+  '@azure/functions@4.16.2':
+    resolution: {integrity: sha1-e/GOBuS1+Ss2i0I8xX/pu2WI788=, tarball: https://ms-feed-12.pkgs.visualstudio.com/1es-public/_packaging/npm-public/npm/registry/@azure/functions/-/functions-4.16.2.tgz}
+    engines: {node: '>=20.0'}
 
   '@azure/identity@4.13.1':
     resolution: {integrity: sha1-vcCRZYuqWaR+6furSHpLsBhym8M=, tarball: https://ms-feed-12.pkgs.visualstudio.com/1es-public/_packaging/npm-public/npm/registry/@azure/identity/-/identity-4.13.1.tgz}
@@ -2244,6 +2265,13 @@ snapshots:
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
+
+  '@azure/functions-extensions-base@0.3.0': {}
+
+  '@azure/functions@4.16.2':
+    dependencies:
+      '@azure/functions-extensions-base': 0.3.0
+      cookie: 0.7.2
 
   '@azure/identity@4.13.1':
     dependencies:

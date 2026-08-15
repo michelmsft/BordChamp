@@ -42,6 +42,7 @@ export interface Credential {
   readonly passwordHash: string;
   readonly totpSecret: EncryptedSecret;
   readonly mfaEnrolled: boolean;
+  readonly mfaRequired: boolean;
 }
 
 export interface RefreshTokenRecord {
@@ -127,10 +128,15 @@ export interface IdentityRepository {
   createAccount(input: CreateAccountInput): Promise<UserProfile>;
   ensureTestProfile(userId: string, email: string): Promise<UserProfile>;
   findByEmail(email: string): Promise<UserProfile | undefined>;
+  listProfiles(): Promise<readonly UserProfile[]>;
   getProfile(userId: string): Promise<UserProfile | undefined>;
   updateProfile(userId: string, changes: ProfileChanges, etag: string): Promise<UserProfile>;
+  updateProfileStatus(userId: string, status: ProfileStatus): Promise<UserProfile>;
   incrementSessionVersion(userId: string): Promise<UserProfile>;
   getCredential(userId: string): Promise<Credential | undefined>;
+  resetCredential(userId: string, passwordHash: string, totpSecret: EncryptedSecret): Promise<void>;
+  setPasswordHash(userId: string, passwordHash: string): Promise<void>;
+  setMfaRequired(userId: string, required: boolean): Promise<void>;
   markMfaEnrolled(userId: string): Promise<void>;
   saveRefreshToken(record: RefreshTokenRecord): Promise<void>;
   getRefreshToken(userId: string, tokenId: string): Promise<RefreshTokenRecord | undefined>;
@@ -182,6 +188,7 @@ class InMemoryIdentityRepository implements IdentityRepository {
       passwordHash: input.passwordHash,
       totpSecret: input.totpSecret,
       mfaEnrolled: false,
+      mfaRequired: true,
     });
     return profile;
   }
@@ -211,6 +218,10 @@ class InMemoryIdentityRepository implements IdentityRepository {
     return userId === undefined ? undefined : this.profiles.get(userId);
   }
 
+  async listProfiles() {
+    return [...this.profiles.values()].sort((left, right) => left.email.localeCompare(right.email));
+  }
+
   async getProfile(userId: string) {
     return this.profiles.get(userId);
   }
@@ -224,6 +235,13 @@ class InMemoryIdentityRepository implements IdentityRepository {
       updatedAt: new Date().toISOString(),
       etag: this.nextEtag(),
     };
+    this.profiles.set(userId, next);
+    return next;
+  }
+
+  async updateProfileStatus(userId: string, status: ProfileStatus) {
+    const current = this.requireProfile(userId);
+    const next = { ...current, status, sessionVersion: current.sessionVersion + 1, updatedAt: new Date().toISOString(), etag: this.nextEtag() };
     this.profiles.set(userId, next);
     return next;
   }
@@ -242,6 +260,23 @@ class InMemoryIdentityRepository implements IdentityRepository {
 
   async getCredential(userId: string) {
     return this.credentials.get(userId);
+  }
+
+  async resetCredential(userId: string, passwordHash: string, totpSecret: EncryptedSecret) {
+    if (!this.credentials.has(userId)) throw new IdentityNotFoundError("Credential not found");
+    this.credentials.set(userId, { userId, passwordHash, totpSecret, mfaEnrolled: true, mfaRequired: true });
+  }
+
+  async setPasswordHash(userId: string, passwordHash: string) {
+    const current = this.credentials.get(userId);
+    if (!current) throw new IdentityNotFoundError("Credential not found");
+    this.credentials.set(userId, { ...current, passwordHash });
+  }
+
+  async setMfaRequired(userId: string, required: boolean) {
+    const current = this.credentials.get(userId);
+    if (!current) throw new IdentityNotFoundError("Credential not found");
+    this.credentials.set(userId, { ...current, mfaRequired: required });
   }
 
   async markMfaEnrolled(userId: string) {
@@ -460,6 +495,7 @@ class AzureTableIdentityRepository implements IdentityRepository {
       totpNonce: input.totpSecret.nonce,
       totpTag: input.totpSecret.tag,
       mfaEnrolled: false,
+      mfaRequired: true,
     });
     return this.requireProfile(id);
   }
@@ -499,6 +535,14 @@ class AzureTableIdentityRepository implements IdentityRepository {
     }
   }
 
+  async listProfiles() {
+    const profiles: UserProfile[] = [];
+    for await (const entity of this.users.listEntities<ProfileEntity>({ queryOptions: { filter: "RowKey eq 'PROFILE'" } })) {
+      profiles.push(toProfile(entity));
+    }
+    return profiles.sort((left, right) => left.email.localeCompare(right.email));
+  }
+
   async getProfile(userId: string) {
     try {
       return toProfile(await this.users.getEntity<ProfileEntity>(userId, "PROFILE"));
@@ -512,6 +556,13 @@ class AzureTableIdentityRepository implements IdentityRepository {
     const current = await this.requireProfile(userId);
     const entity = profileToEntity({ ...current, ...changes, updatedAt: new Date().toISOString() });
     await this.replace(entity, etag);
+    return this.requireProfile(userId);
+  }
+
+  async updateProfileStatus(userId: string, status: ProfileStatus) {
+    const current = await this.requireProfile(userId);
+    const entity = profileToEntity({ ...current, status, sessionVersion: current.sessionVersion + 1, updatedAt: new Date().toISOString() });
+    await this.replace(entity, current.etag);
     return this.requireProfile(userId);
   }
 
@@ -538,11 +589,33 @@ class AzureTableIdentityRepository implements IdentityRepository {
           tag: entity.totpTag as string,
         },
         mfaEnrolled: entity.mfaEnrolled === true,
+        mfaRequired: entity.mfaRequired !== false,
       };
     } catch (error: unknown) {
       if (isStatus(error, 404)) return undefined;
       throw error;
     }
+  }
+
+  async resetCredential(userId: string, passwordHash: string, totpSecret: EncryptedSecret) {
+    await this.users.updateEntity({
+      partitionKey: userId,
+      rowKey: "CREDENTIAL",
+      passwordHash,
+      totpCiphertext: totpSecret.ciphertext,
+      totpNonce: totpSecret.nonce,
+      totpTag: totpSecret.tag,
+      mfaEnrolled: true,
+      mfaRequired: true,
+    }, "Merge");
+  }
+
+  async setPasswordHash(userId: string, passwordHash: string) {
+    await this.users.updateEntity({ partitionKey: userId, rowKey: "CREDENTIAL", passwordHash }, "Merge");
+  }
+
+  async setMfaRequired(userId: string, required: boolean) {
+    await this.users.updateEntity({ partitionKey: userId, rowKey: "CREDENTIAL", mfaRequired: required }, "Merge");
   }
 
   async markMfaEnrolled(userId: string) {

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:production-data": "vite --mode production-data",
     "build": "tsc -b && vite build",
     "check": "tsc -b && oxlint",
     "lint": "oxlint",

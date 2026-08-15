@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { ClipboardCheck, PackageOpen, Ruler, ShieldCheck, Users } from 'lucide-react'
 
 import {
   api,
@@ -23,8 +24,16 @@ import { PRODUCT_IMAGE_GROUPS, type ProductImageGroupId } from './product-images
 import { Drawer } from './drawer'
 import { useToast } from './toast'
 import { useT } from './i18n'
+import type { Membership, Persona, Profile } from './auth'
 
-type Tab = 'units' | 'commodities' | 'schemes'
+type Tab = 'iam' | 'units' | 'commodities' | 'schemes'
+
+interface IamUser {
+  profile: Profile
+  mfaEnrolled: boolean
+  mfaRequired: boolean
+  memberships: Membership[]
+}
 
 const CATEGORIES: readonly CommodityCategory[] = ['crop', 'aquaculture', 'liveAnimal', 'animalProduct']
 const COMMODITY_STATUSES: readonly CommodityStatus[] = ['active', 'suspended', 'inactive']
@@ -34,25 +43,123 @@ const INSPECTION_TYPES: readonly InspectionType[] = ['quality', 'sanitary', 'vet
 const SCHEME_STATUSES: readonly SchemeStatus[] = ['active', 'suspended', 'inactive']
 const RESULT_KINDS: readonly MetricResultKind[] = ['percentage', 'passFail', 'measurement', 'qualitative']
 const OPERATORS: readonly StandardOperator[] = ['gte', 'lte', 'range', 'equals', 'qualitative']
+const IAM_ROLES: readonly Membership['role'][] = ['owner', 'admin', 'member']
+const IAM_MEMBERSHIP_STATUSES: readonly Membership['status'][] = ['active', 'suspended', 'revoked']
+const IAM_PERSONAS: readonly Persona[] = ['Farmer', 'CooperativeManager', 'Trader', 'Broker', 'Buyer', 'WarehouseOperator', 'LogisticsProvider', 'Inspector', 'ExchangeAdmin', 'Regulator', 'DataConsumer']
 
 export function SettingsWorkspace({ identity }: { identity: Identity }) {
-  const [tab, setTab] = useState<Tab>('units')
+  const [tab, setTab] = useState<Tab>('commodities')
   const [refreshKey, setRefreshKey] = useState(0)
   const bump = () => setRefreshKey((k) => k + 1)
 
   return <div className="erp-layout">
     <aside className="erp-modules" aria-label="Paramètres">
       <header><strong>Référentiel</strong><small>Administration</small></header>
-      <button className={tab === 'units' ? 'is-active' : ''} type="button" onClick={() => setTab('units')}><span>⚖</span><span>Unités</span></button>
-      <button className={tab === 'commodities' ? 'is-active' : ''} type="button" onClick={() => setTab('commodities')}><span>◈</span><span>Produits</span></button>
-      <button className={tab === 'schemes' ? 'is-active' : ''} type="button" onClick={() => setTab('schemes')}><span>✓</span><span>Contrôles</span></button>
+      <button className={tab === 'iam' ? 'is-active' : ''} type="button" onClick={() => setTab('iam')}><span><Users /></span><span>Utilisateurs & accès</span></button>
+      <button className={tab === 'commodities' ? 'is-active' : ''} type="button" onClick={() => setTab('commodities')}><span><PackageOpen /></span><span>Produits</span></button>
+      <button className={tab === 'units' ? 'is-active' : ''} type="button" onClick={() => setTab('units')}><span><Ruler /></span><span>Unités de mesure</span></button>
+      <button className={tab === 'schemes' ? 'is-active' : ''} type="button" onClick={() => setTab('schemes')}><span><ClipboardCheck /></span><span>Contrôles</span></button>
     </aside>
     <section className="erp-content">
+      {tab === 'iam' && <IamTab identity={identity} refreshKey={refreshKey} onChanged={bump} />}
       {tab === 'units' && <UnitsTab identity={identity} refreshKey={refreshKey} onChanged={bump} />}
       {tab === 'commodities' && <CommoditiesTab identity={identity} refreshKey={refreshKey} onChanged={bump} />}
       {tab === 'schemes' && <SchemesTab identity={identity} refreshKey={refreshKey} onChanged={bump} />}
     </section>
   </div>
+}
+
+function IamTab({ identity, refreshKey, onChanged }: { identity: Identity; refreshKey: number; onChanged: () => void }) {
+  const { data, loading, error, reload } = useAdminList<IamUser>('/v1/admin/iam/users', identity, refreshKey)
+  const [query, setQuery] = useState('')
+  const [busyUserId, setBusyUserId] = useState<string | null>(null)
+  const [passwordUser, setPasswordUser] = useState<IamUser | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const { push } = useToast()
+  const filtered = useMemo(() => (data ?? []).filter(user => {
+    const search = query.trim().toLocaleLowerCase('fr')
+    return !search || `${user.profile.email} ${user.profile.displayName ?? ''} ${user.memberships.flatMap(value => value.personas).join(' ')}`.toLocaleLowerCase('fr').includes(search)
+  }), [data, query])
+
+  async function updateUser(user: IamUser, changes: { status?: Profile['status']; mfaRequired?: boolean }) {
+    setBusyUserId(user.profile.id)
+    try {
+      await api(`/v1/admin/iam/users/${encodeURIComponent(user.profile.id)}`, identity, { method: 'PATCH', body: JSON.stringify(changes) })
+      onChanged()
+      push({ tone: 'success', title: 'Accès utilisateur mis à jour', detail: user.profile.email })
+    } catch (cause) {
+      push({ tone: 'danger', title: 'Mise à jour impossible', detail: readError(cause) })
+    } finally {
+      setBusyUserId(null)
+    }
+  }
+
+  async function updateMembership(user: IamUser, membership: Membership, changes: { role?: Membership['role']; personas?: Persona[]; status?: Membership['status'] }) {
+    setBusyUserId(user.profile.id)
+    try {
+      await api(`/v1/admin/iam/users/${encodeURIComponent(user.profile.id)}/memberships/${encodeURIComponent(membership.organizationId)}`, identity, { method: 'PATCH', body: JSON.stringify(changes) })
+      onChanged()
+      push({ tone: 'success', title: 'Accès organisation mis à jour', detail: user.profile.email })
+    } catch (cause) {
+      push({ tone: 'danger', title: 'Mise à jour impossible', detail: readError(cause) })
+    } finally {
+      setBusyUserId(null)
+    }
+  }
+
+  async function resetPassword(event: FormEvent) {
+    event.preventDefault(); setPasswordError('')
+    if (newPassword !== confirmPassword) { setPasswordError('Les mots de passe ne correspondent pas.'); return }
+    if (!passwordUser) return
+    setBusyUserId(passwordUser.profile.id)
+    try {
+      await api<void>(`/v1/admin/iam/users/${encodeURIComponent(passwordUser.profile.id)}/reset-password`, identity, { method: 'POST', body: JSON.stringify({ password: newPassword }) })
+      push({ tone: 'success', title: 'Mot de passe réinitialisé', detail: passwordUser.profile.email })
+      setPasswordUser(null); setNewPassword(''); setConfirmPassword('')
+    } catch (cause) {
+      setPasswordError(readError(cause))
+    } finally {
+      setBusyUserId(null)
+    }
+  }
+
+  function openPasswordReset(user: IamUser) {
+    setPasswordUser(user); setNewPassword(''); setConfirmPassword(''); setPasswordError('')
+  }
+
+  return <>
+    <SettingsHeader title="Utilisateurs & accès" subtitle="Gérez les comptes, leurs accès et l’exigence MFA." onCreate={reload} onRefresh={reload} createLabel="Actualiser" />
+    {error && <div className="error-strip">{error}</div>}
+    <div className="iam-toolbar"><label><span>⌕</span><input aria-label="Rechercher un utilisateur" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Nom, e-mail ou rôle..." /></label><span>{filtered.length} utilisateur(s)</span></div>
+    {loading && !data ? <div className="erp-loading"><i /><i /><i /></div> : <div className="iam-user-list">{filtered.map(user => {
+      const personas = [...new Set(user.memberships.flatMap(membership => membership.personas))]
+      const isExchangeAdmin = personas.includes('ExchangeAdmin')
+      const busy = busyUserId === user.profile.id
+      return <article className="iam-user" key={user.profile.id}>
+        <div className="iam-user-main"><span className="iam-avatar">{initials(user.profile.displayName || user.profile.email)}</span><div><strong>{user.profile.displayName || user.profile.email}</strong><small>{user.profile.email}</small></div><span className={`status-pill ${user.profile.status === 'active' ? 'is-live' : ''}`}>{statusLabel(user.profile.status)}</span></div>
+        <div className="iam-access"><span><b>Accès</b>{personas.length ? personas.map(persona => <em key={persona}>{persona}</em>) : <small>Aucun rôle actif</small>}</span><span><b>Organisations</b><small>{user.memberships.length} appartenance(s)</small></span></div>
+        <div className="iam-controls">
+          <label>État du compte<select disabled={busy} value={user.profile.status} onChange={(event) => void updateUser(user, { status: event.target.value as Profile['status'] })}><option value="active">Actif</option><option value="suspended">Suspendu</option><option value="inactive">Inactif</option></select></label>
+          <label className={`iam-mfa-toggle ${isExchangeAdmin ? 'is-locked' : ''}`}><input type="checkbox" checked={user.mfaRequired} disabled={busy || isExchangeAdmin} onChange={(event) => void updateUser(user, { mfaRequired: event.target.checked })} /><span><ShieldCheck /><strong>MFA obligatoire</strong><small>{isExchangeAdmin ? 'Verrouillé pour les administrateurs' : user.mfaEnrolled ? 'Authenticator configuré' : 'Authenticator non configuré'}</small></span></label>
+          <button className="secondary-button iam-password-button" type="button" disabled={busy} onClick={() => openPasswordReset(user)}>Réinitialiser le mot de passe</button>
+        </div>
+        {user.memberships.length > 0 && <div className="iam-memberships"><header><strong>Accès par organisation</strong><small>Rôle, état et personas applicatifs</small></header>{user.memberships.map(membership => <div className="iam-membership" key={membership.organizationId}>
+          <code title={membership.organizationId}>{membership.organizationId.slice(0, 8)}…</code>
+          <label>Rôle<select disabled={busy} value={membership.role} onChange={(event) => void updateMembership(user, membership, { role: event.target.value as Membership['role'] })}>{IAM_ROLES.map(role => <option key={role} value={role}>{role}</option>)}</select></label>
+          <label>État<select disabled={busy} value={membership.status} onChange={(event) => void updateMembership(user, membership, { status: event.target.value as Membership['status'] })}>{IAM_MEMBERSHIP_STATUSES.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+          <div className="iam-personas"><span>Personas</span>{IAM_PERSONAS.map(persona => <label key={persona}><input type="checkbox" disabled={busy} checked={membership.personas.includes(persona)} onChange={() => { const personas = membership.personas.includes(persona) ? membership.personas.filter(value => value !== persona) : [...membership.personas, persona]; void updateMembership(user, membership, { personas }) }} />{persona}</label>)}</div>
+        </div>)}</div>}
+      </article>
+    })}</div>}
+    {passwordUser && <Drawer title="Réinitialiser le mot de passe" detail={passwordUser.profile.email} onClose={() => setPasswordUser(null)} onSubmit={(event) => void resetPassword(event)} actions={<><button type="button" className="secondary-button" onClick={() => setPasswordUser(null)}>Annuler</button><button type="submit" className="primary-button" disabled={busyUserId === passwordUser.profile.id}>Enregistrer</button></>}>
+      <div className="iam-password-note"><ShieldCheck /><p>Le nouveau mot de passe doit contenir au moins 10 caractères, des lettres, un chiffre et un symbole. Toutes les sessions actives seront révoquées.</p></div>
+      <label>Nouveau mot de passe<input type="password" autoComplete="new-password" required minLength={10} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /></label>
+      <label>Confirmer le mot de passe<input type="password" autoComplete="new-password" required minLength={10} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /></label>
+      {passwordError && <div className="form-error" role="alert">{passwordError}</div>}
+    </Drawer>}
+  </>
 }
 
 function UnitsTab({ identity, refreshKey, onChanged }: { identity: Identity; refreshKey: number; onChanged: () => void }) {
@@ -115,9 +222,17 @@ function CommoditiesTab({ identity, refreshKey, onChanged }: { identity: Identit
   const [duplicate, setDuplicate] = useState<AdminCommodity | null>(null)
   const [creating, setCreating] = useState(false)
   const [openMenuCode, setOpenMenuCode] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+  const [category, setCategory] = useState<CommodityCategory | 'all'>('all')
+  const [status, setStatus] = useState<CommodityStatus | 'all'>('all')
   const { push } = useToast()
   const t = useT()
   const closeAll = () => { setEdit(null); setDuplicate(null); setCreating(false) }
+  const filtered = useMemo(() => (data ?? []).filter((commodity) => {
+    const search = query.trim().toLocaleLowerCase('fr')
+    const matchesQuery = !search || `${commodity.code} ${commodity.name.fr} ${commodity.name.en}`.toLocaleLowerCase('fr').includes(search)
+    return matchesQuery && (category === 'all' || commodity.category === category) && (status === 'all' || commodity.status === status)
+  }), [category, data, query, status])
 
   const applyStatus = useCallback(async (commodity: AdminCommodity, nextStatus: CommodityStatus) => {
     await api(`/v1/admin/reference-data/commodities/${encodeURIComponent(commodity.code)}`, identity, {
@@ -155,14 +270,26 @@ function CommoditiesTab({ identity, refreshKey, onChanged }: { identity: Identit
   }, [applyStatus, onChanged, push, t])
 
   return <>
-    <SettingsHeader title="Produits" subtitle={`${data?.length ?? 0} produit(s) au catalogue`} onCreate={() => setCreating(true)} onRefresh={reload} createLabel={t('commodities.new')} />
+    <SettingsHeader title="Produits" subtitle="Gérez les produits disponibles sur la plateforme." onCreate={() => setCreating(true)} onRefresh={reload} createLabel={t('commodities.new')} />
     {error && <div className="error-strip">{error}</div>}
-    {loading && !data ? <div className="erp-loading"><i /><i /><i /></div> : <div className="table-wrap"><table><thead><tr><th>Produit</th><th>Catégorie</th><th>Unité par défaut</th><th>Unités autorisées</th><th>Public</th><th>État</th><th aria-label={t('commodities.row.actions')}></th></tr></thead><tbody>{(data ?? []).map((c) => <tr key={c.code} onClick={() => setEdit(c)} style={{ cursor: 'pointer' }}><td><CommodityVisual imageName={c.imageName} iconName={c.iconName} code={c.code} /><strong>{c.name.fr}</strong><small>{c.code}</small></td><td>{categoryLabel(c.category)}</td><td>{c.defaultUnitCode ?? '—'}</td><td>{c.allowedUnitCodes.join(', ') || '—'}</td><td>{c.isPublic ? '✓' : '—'}</td><td><span className={`status-pill ${c.status === 'active' ? 'is-live' : ''}`}>{statusLabel(c.status)}</span></td><td><RowMenu open={openMenuCode === c.code} onToggle={(next) => setOpenMenuCode(next ? c.code : null)} label={t('commodities.row.actions')} items={[
-      { label: t('commodities.row.duplicate'), onSelect: () => { setDuplicate(c); setOpenMenuCode(null) } },
-      c.status === 'active'
-        ? { label: t('commodities.row.suspend'), tone: 'danger', onSelect: () => { setOpenMenuCode(null); void toggleStatusWithUndo(c, 'suspended') } }
-        : { label: t('commodities.row.reactivate'), onSelect: () => { setOpenMenuCode(null); void toggleStatusWithUndo(c, 'active') } },
-    ]} /></td></tr>)}</tbody></table></div>}
+    <div className="product-catalog-toolbar">
+      <label><span>⌕</span><input aria-label="Rechercher un produit" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rechercher un produit..." /></label>
+      <select aria-label="Catégorie" value={category} onChange={(event) => setCategory(event.target.value as CommodityCategory | 'all')}><option value="all">Toutes catégories</option>{CATEGORIES.map((value) => <option key={value} value={value}>{categoryLabel(value)}</option>)}</select>
+      <select aria-label="Statut" value={status} onChange={(event) => setStatus(event.target.value as CommodityStatus | 'all')}><option value="all">Tous les statuts</option>{COMMODITY_STATUSES.map((value) => <option key={value} value={value}>{statusLabel(value)}</option>)}</select>
+    </div>
+    {loading && !data ? <div className="erp-loading"><i /><i /><i /></div> : <>
+      <div className="product-catalog-grid">{filtered.map((commodity) => <article className="product-catalog-card" key={commodity.code} onClick={() => setEdit(commodity)}>
+        <div className="product-card-visual"><CommodityVisual imageName={commodity.imageName} iconName={commodity.iconName} code={commodity.code} /><span className={`status-pill ${commodity.status === 'active' ? 'is-live' : ''}`}>{statusLabel(commodity.status)}</span></div>
+        <div className="product-card-body"><h3>{commodity.name.fr}</h3><small>{commodity.code}</small><span className="product-category">{categoryLabel(commodity.category)}</span><dl><div><dt>Unité par défaut</dt><dd>{commodity.defaultUnitCode ?? '—'} · {units?.find((unit) => unit.code === commodity.defaultUnitCode)?.label.fr ?? 'Non définie'}</dd></div><div><dt>Unités autorisées</dt><dd>{commodity.allowedUnitCodes.join(', ') || '—'}</dd></div></dl></div>
+        <footer><span>{commodity.isPublic ? '◎ Public' : '◌ Privé'}</span><RowMenu open={openMenuCode === commodity.code} onToggle={(next) => setOpenMenuCode(next ? commodity.code : null)} label={t('commodities.row.actions')} items={[
+          { label: t('commodities.row.duplicate'), onSelect: () => { setDuplicate(commodity); setOpenMenuCode(null) } },
+          commodity.status === 'active'
+            ? { label: t('commodities.row.suspend'), tone: 'danger', onSelect: () => { setOpenMenuCode(null); void toggleStatusWithUndo(commodity, 'suspended') } }
+            : { label: t('commodities.row.reactivate'), onSelect: () => { setOpenMenuCode(null); void toggleStatusWithUndo(commodity, 'active') } },
+        ]} /></footer>
+      </article>)}</div>
+      <div className="catalog-count">Affichage de {filtered.length} produit(s) sur {data?.length ?? 0}</div>
+    </>}
     {(edit || duplicate || creating) && <CommodityDialog identity={identity} commodity={edit ?? duplicate ?? undefined} duplicate={duplicate !== null} units={units ?? []} onClose={closeAll} onSaved={() => { closeAll(); onChanged() }} />}
   </>
 }
@@ -362,8 +489,8 @@ function CommodityDialog({ identity, commodity, duplicate = false, units, onClos
     <div className="product-editor-top">
       <section className="product-editor-section product-visual-section">
         <SectionTitle symbol="▧" title="Image du produit" />
-        <div className={`product-image-preview ${form.imageName ? '' : 'is-empty'}`}>
-          {form.imageName ? <ProductImage name={form.imageName} alt={form.nameFr || 'Produit'} /> : <span>▧<small>Aucune image sélectionnée</small></span>}
+        <div className="product-image-preview">
+          <CommodityVisual imageName={form.imageName || undefined} iconName={commodity?.iconName} code={form.code} alt={form.nameFr || 'Produit'} />
         </div>
         <div className="product-image-actions">
           <button type="button" className="product-image-change" onClick={() => setImageLibraryOpen((open) => !open)}>▧ {form.imageName ? "Changer l'image" : 'Choisir une image'}</button>
@@ -550,6 +677,7 @@ function useAdminList<T>(path: string, identity: Identity, refreshKey: number) {
 }
 
 function readError(cause: unknown) { return cause instanceof Error ? cause.message : 'Une erreur est survenue' }
+function initials(value: string) { return value.split(/[\s@._-]+/u).filter(Boolean).map(part => part[0]).join('').slice(0, 2).toUpperCase() }
 function statusLabel(status: string) { return ({ active: 'Actif', suspended: 'Suspendu', inactive: 'Inactif' } as Record<string, string>)[status] ?? status }
 function dimensionLabel(dimension: UnitDimension) { return ({ mass: 'Masse', count: 'Nombre', volume: 'Volume', length: 'Longueur', temperature: 'Température' } as const)[dimension] }
 function categoryLabel(category: CommodityCategory) { return ({ crop: 'Culture', aquaculture: 'Aquaculture', liveAnimal: 'Animal vivant', animalProduct: 'Produit animal' } as const)[category] }

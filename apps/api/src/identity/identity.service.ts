@@ -11,10 +11,13 @@ import {
   type Membership,
   type MembershipRole,
   type ProfileChanges,
+  type ProfileStatus,
   type UserProfile,
 } from "./identity.repository.js";
 import type { OrganizationRepository } from "../organizations/organization.repository.js";
 import { ORGANIZATION_REPOSITORY, type OrganizationType } from "../organizations/organization.repository.js";
+import { hashPassword } from "./credentials.js";
+import { validatePasswordStrength } from "./auth.service.js";
 
 export interface SessionView {
   readonly profile: UserProfile;
@@ -23,6 +26,13 @@ export interface SessionView {
   readonly activeMembership?: Membership;
   readonly effectivePersonas: readonly Persona[];
   readonly organizations: Readonly<Record<string, { readonly id: string; readonly name: string; readonly type: OrganizationType }>>;
+}
+
+export interface IamUserView {
+  readonly profile: UserProfile;
+  readonly mfaEnrolled: boolean;
+  readonly mfaRequired: boolean;
+  readonly memberships: readonly Membership[];
 }
 
 const PERSONA_BY_TYPE: Record<OrganizationType, Persona> = {
@@ -89,6 +99,67 @@ export class IdentityService {
       throw new ForbiddenException("Actor is not an active member of the organization");
     }
     return this.map(() => this.identities.setPreferredOrganization(userId, organizationId, etag));
+  }
+
+  async listIamUsers(actorUserId: string): Promise<readonly IamUserView[]> {
+    await this.requireExchangeAdmin(actorUserId);
+    const profiles = await this.identities.listProfiles();
+    return Promise.all(profiles.map(async profile => {
+      const [credential, memberships] = await Promise.all([
+        this.identities.getCredential(profile.id),
+        this.identities.listMemberships(profile.id),
+      ]);
+      return {
+        profile,
+        mfaEnrolled: credential?.mfaEnrolled === true,
+        mfaRequired: credential?.mfaRequired !== false,
+        memberships,
+      };
+    }));
+  }
+
+  async updateIamUser(actorUserId: string, targetUserId: string, changes: { status?: ProfileStatus; mfaRequired?: boolean }): Promise<IamUserView> {
+    await this.requireExchangeAdmin(actorUserId);
+    const target = await this.identities.getProfile(targetUserId);
+    if (!target) throw new NotFoundException("User not found");
+    const memberships = await this.identities.listMemberships(targetUserId);
+    const isExchangeAdmin = memberships.some(membership => membership.status === "active" && membership.personas.includes("ExchangeAdmin"));
+    if (changes.mfaRequired === false && isExchangeAdmin) throw new BadRequestException("MFA is mandatory for ExchangeAdmin users");
+    if (changes.status !== undefined) {
+      if (actorUserId === targetUserId && changes.status !== "active") throw new BadRequestException("You cannot suspend your own account");
+      await this.identities.updateProfileStatus(targetUserId, changes.status);
+    }
+    if (changes.mfaRequired !== undefined) {
+      await this.identities.setMfaRequired(targetUserId, changes.mfaRequired);
+      await this.identities.incrementSessionVersion(targetUserId);
+    }
+    const profile = await this.identities.getProfile(targetUserId);
+    const credential = await this.identities.getCredential(targetUserId);
+    if (!profile) throw new NotFoundException("User not found");
+    return { profile, mfaEnrolled: credential?.mfaEnrolled === true, mfaRequired: credential?.mfaRequired !== false, memberships };
+  }
+
+  async resetIamPassword(actorUserId: string, targetUserId: string, password: string): Promise<void> {
+    await this.requireExchangeAdmin(actorUserId);
+    validatePasswordStrength(password);
+    if (!await this.identities.getProfile(targetUserId)) throw new NotFoundException("User not found");
+    await this.identities.setPasswordHash(targetUserId, await hashPassword(password));
+    await this.identities.incrementSessionVersion(targetUserId);
+  }
+
+  async updateIamMembership(actorUserId: string, targetUserId: string, organizationId: string, changes: { role?: MembershipRole; personas?: readonly Persona[]; status?: Membership["status"] }): Promise<Membership> {
+    await this.requireExchangeAdmin(actorUserId);
+    const memberships = await this.identities.listOrganizationMembers(organizationId);
+    const membership = memberships.find(value => value.userId === targetUserId);
+    if (!membership) throw new NotFoundException("Membership not found");
+    const removesOwnAdmin = actorUserId === targetUserId
+      && membership.personas.includes("ExchangeAdmin")
+      && (changes.status !== undefined && changes.status !== "active" || changes.personas !== undefined && !changes.personas.includes("ExchangeAdmin"));
+    if (removesOwnAdmin) throw new BadRequestException("You cannot remove your own ExchangeAdmin access");
+    const normalized = changes.personas === undefined ? changes : { ...changes, personas: uniquePersonas(changes.personas) };
+    const updated = await this.map(() => this.identities.updateMembership(organizationId, targetUserId, normalized, membership.etag));
+    await this.identities.incrementSessionVersion(targetUserId);
+    return updated;
   }
 
   async onboardOrganization(userId: string, personas: readonly Persona[], input: { name: string; type: OrganizationType }): Promise<{ readonly profile: UserProfile; readonly membership: Membership }> {
@@ -161,6 +232,15 @@ export class IdentityService {
       throw new ForbiddenException("Owner or admin membership required");
     }
     return membership;
+  }
+
+  private async requireExchangeAdmin(userId: string): Promise<void> {
+    const profile = await this.identities.getProfile(userId);
+    if (!profile || profile.status !== "active") throw new ForbiddenException("Active ExchangeAdmin account required");
+    const memberships = await this.identities.listMemberships(userId);
+    if (!memberships.some(value => value.status === "active" && value.personas.includes("ExchangeAdmin"))) {
+      throw new ForbiddenException("ExchangeAdmin required");
+    }
   }
 
   private async map<T>(operation: () => Promise<T>): Promise<T> {

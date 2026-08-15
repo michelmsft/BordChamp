@@ -376,7 +376,7 @@ async function callApi<T>(path: string, init: RequestInit): Promise<T> {
   const headers = new Headers(init.headers)
   headers.set('accept', 'application/json')
   const token = getAccessToken()
-  if (token) headers.set('authorization', `Bearer ${token}`)
+  if (token) headers.set('x-bordchamp-authorization', `Bearer ${token}`)
   const response = await fetch(`/api${path}`, { ...init, headers, credentials: 'include' })
   const parsed = (await response.json().catch(() => null)) as { data?: T; message?: string | string[] } | null
   if (!response.ok) {

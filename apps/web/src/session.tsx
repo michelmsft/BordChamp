@@ -58,7 +58,7 @@ async function apiCall<T>(path: string, init?: RequestInit): Promise<T> {
     const headers = new Headers(init?.headers)
     headers.set('accept', 'application/json')
     const token = getAccessToken()
-    if (token) headers.set('authorization', `Bearer ${token}`)
+    if (token) headers.set('x-bordchamp-authorization', `Bearer ${token}`)
     return fetch(`/api${path}`, { ...init, headers, credentials: 'include' })
   }
   let response = await attempt()
@@ -145,9 +145,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       return result
     },
     async login(email, password) {
-      const { challengeToken } = await apiLogin(email, password)
-      setMfaState({ email, challengeToken })
-      setStatus('mfaChallenge')
+      const result = await apiLogin(email, password)
+      if (result.mfaRequired) {
+        setMfaState({ email, challengeToken: result.challengeToken })
+        setStatus('mfaChallenge')
+        return
+      }
+      const nextSession = await apiCall<Session>('/v1/me')
+      setSession(nextSession)
+      setMfaState(null)
+      setStatus('authenticated')
     },
     async verifyMfa(code, useRecovery) {
       if (!mfaState) throw new Error("Aucune connexion en cours.")

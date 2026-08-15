@@ -54,13 +54,14 @@ export async function verifyPassword(hash: string, password: string): Promise<bo
   }
 }
 
-export function generateEnrollment(email: string): EnrollmentSecret {
+export function generateEnrollment(email: string, secretBase32?: string): EnrollmentSecret {
   const totp = new TOTP({
     issuer: TOTP_ISSUER,
     label: `${TOTP_LABEL}:${normalizeEmail(email)}`,
     algorithm: TOTP_ALGORITHM,
     digits: TOTP_DIGITS,
     period: TOTP_PERIOD_SECONDS,
+    ...(secretBase32 === undefined ? {} : { secret: secretBase32 }),
   });
   return { secretBase32: totp.secret.base32, otpauthUri: totp.toString() };
 }

@@ -59,6 +59,10 @@ export interface AuthenticationResponse {
   profile: Profile
 }
 
+export type LoginResponse =
+  | { mfaRequired: true; challengeToken: string }
+  | ({ mfaRequired: false } & AuthenticationResponse)
+
 export interface RegistrationVerification extends AuthenticationResponse {
   recoveryCodes: string[]
 }
@@ -113,8 +117,10 @@ export async function verifyRegistration(enrollmentToken: string, code: string):
   return result
 }
 
-export async function login(email: string, password: string): Promise<{ challengeToken: string }> {
-  return authFetch<{ challengeToken: string }>('/v1/auth/login', { email, password })
+export async function login(email: string, password: string): Promise<LoginResponse> {
+  const result = await authFetch<LoginResponse>('/v1/auth/login', { email, password })
+  if (!result.mfaRequired) setAccessToken(result.accessToken)
+  return result
 }
 
 export async function verifyLogin(challengeToken: string, code: string, useRecovery = false): Promise<AuthenticationResponse> {

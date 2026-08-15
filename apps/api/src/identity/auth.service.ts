@@ -99,16 +99,21 @@ export class AuthService {
     return { ...session, recoveryCodes: codes.map(value => value.plaintext) };
   }
 
-  async login(email: string, password: string): Promise<{ readonly challengeToken: string }> {
+  async login(email: string, password: string): Promise<
+    | { readonly mfaRequired: true; readonly challengeToken: string }
+    | ({ readonly mfaRequired: false } & AuthenticationResult)
+  > {
     const profile = await this.identities.findByEmail(email);
     const credential = profile ? await this.identities.getCredential(profile.id) : undefined;
-    const authenticated = credential !== undefined && credential.mfaEnrolled && await verifyPassword(credential.passwordHash, password);
-    if (!authenticated || !profile) {
+    const authenticated = credential !== undefined && await verifyPassword(credential.passwordHash, password);
+    if (!authenticated || !profile || profile.status !== "active") {
       await hashPassword(randomBytes(16).toString("hex"));
       throw new UnauthorizedException("Email or password is incorrect");
     }
+    if (!credential.mfaRequired) return { mfaRequired: false, ...await this.issueSession(profile) };
+    if (!credential.mfaEnrolled) throw new UnauthorizedException("Authenticator enrollment is required");
     const challengeToken = await this.signChallenge({ sub: profile.id, purpose: "mfa" }, CHALLENGE_TTL);
-    return { challengeToken };
+    return { mfaRequired: true, challengeToken };
   }
 
   async verifyLogin(challengeToken: string, code: string, mode: "totp" | "recovery"): Promise<AuthenticationResult> {
@@ -229,7 +234,7 @@ function validateEmail(value: string): string {
   return normalized;
 }
 
-function validatePasswordStrength(password: string): void {
+export function validatePasswordStrength(password: string): void {
   if (typeof password !== "string" || password.length < 10) throw new BadRequestException("Password must be at least 10 characters");
   const hasLetter = /[A-Za-z]/u.test(password);
   const hasDigit = /\d/u.test(password);

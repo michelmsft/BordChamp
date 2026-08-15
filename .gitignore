@@ -6,4 +6,5 @@ coverage/
 !.env.example
 .turbo/
 .azurite/
+.bordchamp/
 *.tsbuildinfo

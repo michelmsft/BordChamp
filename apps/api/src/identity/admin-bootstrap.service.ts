@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 import {
@@ -49,11 +49,61 @@ export class AdminBootstrapService implements OnApplicationBootstrap {
     try {
       const existing = await this.identities.findByEmail(email);
       if (existing) {
+        if (process.env.BORDCHAMP_ADMIN_RESET === "1") {
+          const enrollment = generateEnrollment(email, process.env.BORDCHAMP_ADMIN_TOTP_SECRET?.trim());
+          await this.identities.resetCredential(existing.id, await hashPassword(password), encryptSecret(enrollment.secretBase32));
+          let profile = await this.identities.incrementSessionVersion(existing.id);
+          const memberships = await this.identities.listMemberships(existing.id);
+          if (memberships.length === 0) {
+            profile = await this.identities.updateProfile(
+              existing.id,
+              {
+                displayName,
+                givenName: DEFAULT_GIVEN,
+                surname: DEFAULT_SURNAME,
+                locale: DEFAULT_LOCALE,
+                onboardingState: "organizationRequired",
+              },
+              profile.etag,
+            );
+            const org = await this.organizations.create({
+              type: DEFAULT_ORG_TYPE,
+              name: orgName,
+              ownerUserId: existing.id,
+            });
+            await this.identities.addMembership({
+              userId: existing.id,
+              organizationId: org.id,
+              role: "owner",
+              personas: ["ExchangeAdmin"],
+              status: "active",
+              joinedAt: new Date().toISOString(),
+            });
+            await this.identities.setPreferredOrganization(existing.id, org.id, profile.etag);
+          }
+          const codes = generateRecoveryCodes();
+          await this.identities.saveRecoveryCodes(existing.id, codes.map(entry => ({
+            userId: existing.id,
+            codeId: entry.id,
+            codeHash: entry.hash,
+          })));
+          this.logger.log(`Admin ${email} credentials reset; sensitive enrollment details were not logged.`);
+          return;
+        }
         this.logger.log(`Admin ${email} already exists (id=${existing.id}); skipping seed.`);
         return;
       }
 
-      const enrollment = generateEnrollment(email);
+      const outPath = process.env.BORDCHAMP_ADMIN_SEED_FILE
+        ?? resolve(findWorkspaceRoot(), ".bordchamp", "admin-bootstrap.txt");
+      const configuredSecret = process.env.BORDCHAMP_ADMIN_TOTP_SECRET?.trim();
+      const reusableSecret = process.env.NODE_ENV === "production"
+        ? undefined
+        : findReusableAdminSecret(outPath);
+      const enrollment = generateEnrollment(email, configuredSecret || reusableSecret);
+      if (!configuredSecret && reusableSecret) {
+        this.logger.log("Reusing the existing local admin MFA enrollment secret.");
+      }
       const passwordHash = await hashPassword(password);
       const totpSecret = encryptSecret(enrollment.secretBase32);
       const profile = await this.identities.createAccount({ email, passwordHash, totpSecret });
@@ -113,19 +163,51 @@ export class AdminBootstrapService implements OnApplicationBootstrap {
         "==================================================================",
         "",
       ].join("\n");
-      this.logger.log(banner);
-
-      const outPath = process.env.BORDCHAMP_ADMIN_SEED_FILE
-        ?? resolve(process.cwd(), ".bordchamp", "admin-bootstrap.txt");
-      try {
-        mkdirSync(dirname(outPath), { recursive: true });
-        writeFileSync(outPath, banner, { encoding: "utf8" });
-        this.logger.log(`Admin bootstrap details written to ${outPath}`);
-      } catch (fsError) {
-        this.logger.warn(`Could not persist admin bootstrap file: ${(fsError as Error).message}`);
+      if (process.env.NODE_ENV === "production") {
+        this.logger.log(`Admin ${email} seeded with ExchangeAdmin access; sensitive enrollment details were not logged.`);
+      } else {
+        this.logger.log(banner);
+        try {
+          mkdirSync(dirname(outPath), { recursive: true });
+          writeFileSync(outPath, banner, { encoding: "utf8" });
+          this.logger.log(`Admin bootstrap details written to ${outPath}`);
+        } catch (fsError) {
+          this.logger.warn(`Could not persist admin bootstrap file: ${(fsError as Error).message}`);
+        }
       }
     } catch (error) {
       this.logger.error(`Admin bootstrap failed: ${(error as Error).message}`);
     }
   }
+}
+
+function findWorkspaceRoot(): string {
+  let current = process.cwd();
+  while (true) {
+    if (existsSync(resolve(current, "pnpm-workspace.yaml"))) return current;
+    const parent = dirname(current);
+    if (parent === current) return process.cwd();
+    current = parent;
+  }
+}
+
+function findReusableAdminSecret(outPath: string): string | undefined {
+  const workspaceRoot = findWorkspaceRoot();
+  const candidates = new Set([
+    outPath,
+    resolve(process.cwd(), ".bordchamp", "admin-bootstrap.txt"),
+    resolve(workspaceRoot, "apps", "api", ".bordchamp", "admin-bootstrap.txt"),
+  ]);
+
+  return [...candidates]
+    .flatMap(path => {
+      try {
+        const content = readFileSync(path, "utf8");
+        const secret = /Base32 secret:\s*([A-Z2-7]{16,})/u.exec(content)?.[1];
+        return secret ? [{ secret, modifiedAt: statSync(path).mtimeMs }] : [];
+      } catch {
+        return [];
+      }
+    })
+    .sort((left, right) => right.modifiedAt - left.modifiedAt)[0]?.secret;
 }

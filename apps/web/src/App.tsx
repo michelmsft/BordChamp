@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import type { ReactNode } from 'react'
+import { Activity, BarChart3, Bell, Boxes, LayoutDashboard, Plus, RefreshCw, Settings, ShoppingBag, SlidersHorizontal } from 'lucide-react'
 
 import {
   api,
@@ -78,21 +80,21 @@ function AuthenticatedApp({ identity }: { identity: Identity }) {
     <div className="app-shell">
       <aside className="sidebar">
         <a className="brand" href="#top" aria-label="BordChamp, accueil">
-          <span className="brand-mark">BC</span>
+          <span className="brand-mark" aria-hidden="true">B</span>
           <span><strong>BordChamp</strong><small>Marché agricole</small></span>
         </a>
         <nav aria-label={t('view.overview')}>
-          <NavButton active={view === 'overview'} label={t('view.overview')} symbol="⌂" onClick={() => setView('overview')} />
-          <NavButton active={view === 'erp'} label={t('view.erp')} symbol="▦" onClick={() => setView('erp')} />
-          <NavButton active={view === 'market'} label={t('view.market')} symbol="↗" onClick={() => setView('market')} />
-          <NavButton active={view === 'activity'} label={t('view.activity')} symbol="≡" onClick={() => setView('activity')} />
-          {identity.persona === 'ExchangeAdmin' && <NavButton active={view === 'settings'} label={t('view.settings')} symbol="⚙" onClick={() => setView('settings')} />}
+          <NavButton active={view === 'overview'} label={t('view.overview')} icon={<LayoutDashboard />} onClick={() => setView('overview')} />
+          <NavButton active={view === 'market'} label="Marché" icon={<BarChart3 />} onClick={() => setView('market')} />
+          <NavButton active={view === 'erp'} label="Offres" icon={<ShoppingBag />} onClick={() => setView('erp')} />
+          <NavButton active={view === 'activity'} label={t('view.activity')} icon={<Activity />} onClick={() => setView('activity')} />
+          {identity.persona === 'ExchangeAdmin' && <NavButton active={view === 'settings'} label={t('view.settings')} icon={<Settings />} onClick={() => setView('settings')} />}
         </nav>
         <div className="sidebar-section">
           <span className="eyebrow">Opérations</span>
-          <button className="sidebar-action" type="button" onClick={() => setShowRfq(true)}><span>＋</span> Créer une offre</button>
-          <button className="sidebar-action" type="button" onClick={() => setView('activity')}><span>◎</span> Suivre les échanges</button>
-          <button className="sidebar-action" type="button" onClick={() => setView('operations')}><span>⌘</span> Console avancée</button>
+          <button className="sidebar-action" type="button" onClick={() => setShowRfq(true)}><span><Plus /></span> Créer une offre</button>
+          <button className="sidebar-action" type="button" onClick={() => setView('activity')}><span><Boxes /></span> Suivre les échanges</button>
+          <button className="sidebar-action" type="button" onClick={() => setView('operations')}><span><SlidersHorizontal /></span> Console avancée</button>
         </div>
         <button className="identity-card" type="button" onClick={() => setShowAccount(true)}>
           <span className="avatar">{initials(displayNameOf(session?.profile) ?? personaLabel(identity.persona))}</span>
@@ -107,7 +109,8 @@ function AuthenticatedApp({ identity }: { identity: Identity }) {
           <div className="top-actions">
             <span className={`api-state ${error ? 'is-offline' : ''}`}><i /> {error ? t('shell.status.offline') : t('shell.status.live')}</span>
             <LanguageSwitch />
-            <button className="icon-button" type="button" title={t('shell.refresh')} onClick={() => setRefreshKey((key) => key + 1)}>↻</button>
+            <button className="icon-button" type="button" title="Notifications"><Bell /></button>
+            <button className="icon-button" type="button" title={t('shell.refresh')} onClick={() => setRefreshKey((key) => key + 1)}><RefreshCw /></button>
             <button className="top-identity" type="button" title="Compte et organisation" onClick={() => setShowAccount(true)}>{initials(personaLabel(identity.persona))}</button>
             <button className="primary-button" type="button" onClick={() => setShowRfq(true)}><span>＋</span> {t('shell.newOffer')}</button>
           </div>
@@ -205,7 +208,7 @@ function RfqDialog({ identity, commodities, onClose, onCreated }: { identity: Id
   return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="rfq-title"><DialogHeading title="Nouvelle offre de vente" detail="Réservez un lot disponible et invitez vos acheteurs." onClose={onClose} id="rfq-title" /><form onSubmit={(event) => void submit(event)}><label>Lot disponible<input required value={lotId} onChange={(event) => setLotId(event.target.value)} placeholder="Identifiant du lot" /></label><label>Organisations acheteuses<input required value={buyerIds} onChange={(event) => setBuyerIds(event.target.value)} placeholder="UUID, UUID" /><small>Séparez plusieurs identifiants par une virgule.</small></label><label>Clôture des cotations<input required type="datetime-local" value={expiresAt} onChange={(event) => setExpiresAt(event.target.value)} /></label>{commodities.length > 0 && <div className="form-note">{commodities.length} produits actifs dans le référentiel BordChamp.</div>}{formError && <div className="form-error" role="alert">{formError}</div>}<div className="dialog-actions"><button className="secondary-button" type="button" onClick={onClose}>Annuler</button><button className="primary-button" disabled={submitting} type="submit">{submitting ? 'Publication…' : "Publier l'offre"}</button></div></form></section></div>
 }
 
-function NavButton({ active, label, symbol, onClick }: { active: boolean; label: string; symbol: string; onClick: () => void }) { return <button className={`nav-button ${active ? 'is-active' : ''}`} type="button" onClick={onClick}><span>{symbol}</span>{label}</button> }
+function NavButton({ active, label, icon, onClick }: { active: boolean; label: string; icon: ReactNode; onClick: () => void }) { return <button className={`nav-button ${active ? 'is-active' : ''}`} type="button" onClick={onClick}><span>{icon}</span>{label}</button> }
 function Metric({ label, value, detail, tone = 'normal' }: { label: string; value: string; detail: string; tone?: 'normal' | 'warning' }) { return <article className={`metric ${tone}`}><span>{label}</span><strong>{value}</strong><small>{detail}</small></article> }
 function PanelHeading({ eyebrow, title, action, onAction }: { eyebrow: string; title: string; action?: string; onAction?: () => void }) { return <header className="panel-heading"><div><span className="eyebrow">{eyebrow}</span><h2>{title}</h2></div>{action && <button type="button" onClick={onAction}>{action} <span>→</span></button>}</header> }
 function DialogHeading({ title, detail, onClose, id }: { title: string; detail: string; onClose: () => void; id: string }) { return <header className="dialog-heading"><div><h2 id={id}>{title}</h2><p>{detail}</p></div><button className="icon-button" type="button" title="Fermer" onClick={onClose}>×</button></header> }

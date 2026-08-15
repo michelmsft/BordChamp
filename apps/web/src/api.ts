@@ -158,7 +158,7 @@ export async function api<T>(path: string, identity?: Identity, init?: RequestIn
     headers.set('accept', 'application/json')
     if (init?.body) headers.set('content-type', 'application/json')
     const token = getAccessToken()
-    if (token) headers.set('authorization', `Bearer ${token}`)
+    if (token) headers.set('x-bordchamp-authorization', `Bearer ${token}`)
     if (identity?.organizationId) headers.set('x-organization-id', identity.organizationId)
     if (identity?.persona) headers.set('x-personas', identity.persona)
     return fetch(`/api${path}`, { ...init, headers, credentials: 'include' })

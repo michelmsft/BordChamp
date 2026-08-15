@@ -37,6 +37,7 @@ const ORG_TYPES: readonly OrganizationType[] = [
 ];
 
 const MEMBERSHIP_ROLES: readonly MembershipRole[] = ["owner", "admin", "member"];
+const REFRESH_COOKIE_PATH = "/api/v1/auth";
 
 @Controller("v1")
 export class IdentityController {
@@ -69,10 +70,13 @@ export class IdentityController {
 
   @Public()
   @Post("auth/login")
-  async login(@Body() body: unknown) {
+  async login(@Body() body: unknown, @Res({ passthrough: true }) response: Response) {
     const email = requiredString(body, "email");
     const password = requiredString(body, "password");
-    return { data: await this.auth.login(email, password) };
+    const result = await this.auth.login(email, password);
+    if (result.mfaRequired) return { data: result };
+    writeCookie(response, result.refreshCookie);
+    return { data: { mfaRequired: false, ...response200(result) } };
   }
 
   @Public()
@@ -100,7 +104,7 @@ export class IdentityController {
   @HttpCode(204)
   async logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
     const { clearCookie } = await this.auth.logout(request.headers.cookie);
-    response.clearCookie(clearCookie, { path: "/v1/auth" });
+    response.clearCookie(clearCookie, { path: REFRESH_COOKIE_PATH });
     return;
   }
 
@@ -110,6 +114,50 @@ export class IdentityController {
   async me(@Req() request: Request, @Query("organizationId") organizationId?: string) {
     const principal = this.actors.principal(request);
     return { data: await this.identity.session(principal.userId, organizationId) };
+  }
+
+  @Get("admin/iam/users")
+  async listIamUsers(@Req() request: Request) {
+    const principal = this.actors.principal(request);
+    return { data: await this.identity.listIamUsers(principal.userId) };
+  }
+
+  @Patch("admin/iam/users/:userId")
+  async updateIamUser(@Req() request: Request, @Param("userId") userId: string, @Body() body: unknown) {
+    const principal = this.actors.principal(request);
+    if (typeof body !== "object" || body === null) throw new BadRequestException("Body must be an object");
+    const record = body as Record<string, unknown>;
+    const changes: { status?: "active" | "suspended" | "inactive"; mfaRequired?: boolean } = {};
+    if (record.status !== undefined) {
+      if (!['active', 'suspended', 'inactive'].includes(String(record.status))) throw new BadRequestException("status is invalid");
+      changes.status = record.status as "active" | "suspended" | "inactive";
+    }
+    if (record.mfaRequired !== undefined) {
+      if (typeof record.mfaRequired !== "boolean") throw new BadRequestException("mfaRequired must be boolean");
+      changes.mfaRequired = record.mfaRequired;
+    }
+    if (Object.keys(changes).length === 0) throw new BadRequestException("No IAM changes provided");
+    return { data: await this.identity.updateIamUser(principal.userId, userId, changes) };
+  }
+
+  @Post("admin/iam/users/:userId/reset-password")
+  @HttpCode(204)
+  async resetIamPassword(@Req() request: Request, @Param("userId") userId: string, @Body() body: unknown) {
+    const principal = this.actors.principal(request);
+    await this.identity.resetIamPassword(principal.userId, userId, requiredString(body, "password"));
+  }
+
+  @Patch("admin/iam/users/:userId/memberships/:organizationId")
+  async updateIamMembership(
+    @Req() request: Request,
+    @Param("userId") userId: string,
+    @Param("organizationId") organizationId: string,
+    @Body() body: unknown,
+  ) {
+    const principal = this.actors.principal(request);
+    const changes = parseMemberChanges(body);
+    if (Object.keys(changes).length === 0) throw new BadRequestException("No membership changes provided");
+    return { data: await this.identity.updateIamMembership(principal.userId, userId, organizationId, changes) };
   }
 
   @Patch("me")
@@ -250,7 +298,7 @@ function writeCookie(response: Response, cookie: RefreshCookie) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/v1/auth",
+    path: REFRESH_COOKIE_PATH,
     maxAge: cookie.maxAgeSeconds * 1000,
   });
 }

@@ -1,0 +1,12 @@
+.azure/
+.bordchamp/
+.git/
+.github/
+.azurite/
+**/dist/
+**/node_modules/
+coverage/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
