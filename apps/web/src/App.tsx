@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { ReactNode } from 'react'
-import { Activity, BarChart3, Bell, Boxes, LayoutDashboard, Plus, RefreshCw, Settings, ShoppingBag, SlidersHorizontal } from 'lucide-react'
+import { Activity, ArrowUpRight, BarChart3, Bell, Boxes, LayoutDashboard, Plus, RefreshCw, Settings, ShoppingBag, SlidersHorizontal, Sparkles } from 'lucide-react'
 
 import {
   api,
@@ -145,6 +145,18 @@ function Overview({ commodities, loading, markets, summary, events, onOpenMarket
   const openDeliveries = activeCount(summary?.deliveriesByStatus)
   const activeAlerts = activeCount(summary?.riskAlertsByStatus)
   return <div className="content-stack">
+    <section className="overview-intro">
+      <div className="overview-intro-copy">
+        <span className="intro-kicker"><Sparkles /> Aujourd'hui sur BordChamp</span>
+        <h2>Vos échanges, <em>en un coup d'œil.</em></h2>
+        <p>Suivez la valeur du marché, vos lots et les opérations qui demandent votre attention.</p>
+      </div>
+      <button type="button" className="market-shortcut" onClick={onOpenMarket}>
+        <span>Explorer le marché</span>
+        <strong>{markets.length || commodities.length} produits</strong>
+        <ArrowUpRight aria-hidden="true" />
+      </button>
+    </section>
     <section className="metric-grid" aria-label="Indicateurs clés">
       <Metric label="Volume échangé" value={formatVolume(markets)} detail={`${markets.reduce((sum, item) => sum + item.tradeCount, 0)} transactions`} />
       <Metric label="Valeur du marché" value={money(markets.reduce((sum, item) => sum + item.grossAmountMinor, 0))} detail="Volume brut exécuté" />
